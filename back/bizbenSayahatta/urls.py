@@ -25,12 +25,13 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/admin/', include('admin_api.urls')),
-    path('api/users/', include('users.urls')),
-    path('api/llm/', include('llm.urls')),
+    path('users/', include('users.urls')),
+    path('llm/', include('llm.urls')),
     path("api/places/", include("places.urls")),
     path("api/marketplace/", include("marketplace.urls")),
-    path('api/token/', TokenObtainPairView.as_view()),
+    path('token/', TokenObtainPairView.as_view()),
     path('api/token/refresh/', TokenRefreshView.as_view()),
+    path("marketplace/", include("marketplace.urls")),
 ]
 
 if settings.DEBUG:
