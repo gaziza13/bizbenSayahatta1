@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Case, When, IntegerField
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from llm.models import ChatThread
+from places.models import Place
 from users.models import User
 from users.permissions import IsActiveAndNotBlocked
 
@@ -15,6 +16,8 @@ from .models import (
     TripAdvisorApplication,
     TripAdvisorProfile,
     Trip,
+    TripVersion,
+    Comment,
     WishlistFolder,
     WishlistItem,
     UserRestriction,
@@ -34,6 +37,7 @@ from .serializers import (
     TripUpdateSerializer,
     TripModerationSerializer,
     TripVersionSerializer,
+    CommentSerializer,
     WishlistFolderSerializer,
     WishlistItemSerializer,
     UserRestrictionSerializer,
@@ -505,3 +509,51 @@ class PublicTripListView(ListAPIView):
             if category:
                 qs = qs.filter(Q(category__slug=category) | Q(category__name__iexact=category))
         return qs.order_by("-created_at")
+
+
+class PlaceCommentListCreateView(APIView):
+    """
+    GET /api/places/{place_id}/comments
+    POST /api/places/{place_id}/comments
+    """
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsAuthenticated(), IsActiveAndNotBlocked()]
+        return []
+
+    def get(self, request, place_id):
+        place = Place.objects.filter(id=place_id).first()
+        if not place:
+            return Response({"detail": "Place not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        qs = (
+            Comment.objects.filter(place=place, is_deleted=False)
+            .select_related("user")
+            .order_by(
+                Case(
+                    When(user__role=User.Role.TRIPADVISOR, then=0),
+                    default=1,
+                    output_field=IntegerField(),
+                ),
+                "-created_at",
+            )
+        )
+        serializer = CommentSerializer(qs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, place_id):
+        place = Place.objects.filter(id=place_id).first()
+        if not place:
+            return Response({"detail": "Place not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = CommentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        comment = Comment.objects.create(
+            user=request.user,
+            place=place,
+            comment_text=serializer.validated_data["comment_text"],
+        )
+        output = CommentSerializer(comment).data
+        return Response(output, status=status.HTTP_201_CREATED)
