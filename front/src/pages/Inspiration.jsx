@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { fetchInspirationPlaces, toggleMustVisit } from "../api/places";
+import { fetchPlaceComments, createPlaceComment } from "../api/comments";
 import { fetchProfile } from "../slices/authSlice";
 import s from "../styles/Inspiration.module.css";
 import api from "../api/axios";
 
-
 const categories = ["all", "restaurant", "museum", "tourist_attraction"];
 
+// Функции для работы с ценами
 function normalizePriceTier(priceLevel) {
   if (priceLevel === null || priceLevel === undefined || priceLevel === "") {
     return "unknown";
@@ -39,16 +40,20 @@ function priceTierLabel(priceLevel) {
 }
 
 const Inspiration = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
   const [places, setPlaces] = useState([]);
   const [page, setPage] = useState(1);
   const [next, setNext] = useState(null);
-  const [search, setSearch] = useState(searchParams.get("q") || "");
+  const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState(null);
+
+  /* COMMENTS STATE */
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [loadingComments, setLoadingComments] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -110,9 +115,66 @@ const Inspiration = () => {
     return city || country || "";
   };
 
+  // Функция фильтрации по цене (использует normalizePriceTier)
   const filterByPrice = (places) => {
     if (priceFilter === "all") return places;
     return places.filter((p) => normalizePriceTier(p.price_level) === priceFilter);
+  };
+
+  /* ---------------------------
+     LOAD PLACES
+  --------------------------- */
+
+  const loadPlaces = async () => {
+    const data = await fetchInspirationPlaces(
+      page,
+      search.trim(),
+      category,
+      preferenceFilters
+    );
+
+    const filteredResults = filterByPrice(data.results);
+
+    setPlaces((prev) =>
+      page === 1 ? filteredResults : [...prev, ...filteredResults]
+    );
+
+    setNext(data.next);
+  };
+
+  /* ---------------------------
+     COMMENTS
+  --------------------------- */
+
+  const loadComments = async (placeId) => {
+    try {
+      setLoadingComments(true);
+      setComments([]);
+      const data = await fetchPlaceComments(placeId);
+      setComments(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to load comments", err);
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+
+    if (!isAuthed) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const created = await createPlaceComment(selectedPlace.id, newComment);
+      setComments((prev) => [created, ...prev]);
+      setNewComment("");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to post comment. Please try again.");
+    }
   };
 
   /* ---------------------------
@@ -128,7 +190,6 @@ const Inspiration = () => {
     try {
       const data = await toggleMustVisit(placeId, !currentValue);
       await api.post(`places/places/${placeId}/save/`);
-      console.log("SERVER RESPONSE:", data);
 
       setPlaces((prev) =>
         prev.map((place) =>
@@ -156,34 +217,17 @@ const Inspiration = () => {
     navigate("/trip");
   };
 
-  const loadPlaces = async () => {
-    const data = await fetchInspirationPlaces(
-      page,
-      search.trim(),
-      category,
-      preferenceFilters
-    );
-
-    const filteredResults = filterByPrice(data.results);
-
-    setPlaces((prev) =>
-      page === 1 ? filteredResults : [...prev, ...filteredResults]
-    );
-
-    setNext(data.next);
-  };
+  /* ---------------------------
+     EFFECTS
+  --------------------------- */
 
   useEffect(() => {
     setPage(1);
   }, [search, category, priceFilter]);
 
   useEffect(() => {
-    const q = searchParams.get("q") || "";
-    if (q !== search) {
-      setSearch(q);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+    loadPlaces();
+  }, [page, search, category, priceFilter, preferenceFilters]);
 
   useEffect(() => {
     const token = localStorage.getItem("access");
@@ -191,11 +235,6 @@ const Inspiration = () => {
       dispatch(fetchProfile());
     }
   }, [dispatch, user]);
-
-  useEffect(() => {
-    loadPlaces();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, search, category, priceFilter, preferenceFilters]);
 
   /* ---------------------------
      RENDER
@@ -205,23 +244,15 @@ const Inspiration = () => {
     <div className={s.page}>
       <h1 className={s.title}>Inspiration</h1>
 
+      {/* Search Input */}
       <input
         className={s.search}
         placeholder="Search destination..."
         value={search}
-        onChange={(e) => {
-          const value = e.target.value;
-          setSearch(value);
-          const nextParams = new URLSearchParams(searchParams);
-          if (value.trim()) {
-            nextParams.set("q", value);
-          } else {
-            nextParams.delete("q");
-          }
-          setSearchParams(nextParams, { replace: true });
-        }}
+        onChange={(e) => setSearch(e.target.value)}
       />
 
+      {/* Filters */}
       <div className={s.controls}>
         <div className={s.selectRowWithShadow}>
           <div className={s.selectBlock}>
@@ -248,17 +279,17 @@ const Inspiration = () => {
               value={priceFilter}
               onChange={(e) => setPriceFilter(e.target.value)}
             >
-              <option value="all">All price levels</option>
-              <option value="free">Free</option>
-              <option value="budget">Budget</option>
-              <option value="moderate">Moderate</option>
-              <option value="premium">Premium</option>
-              <option value="unknown">Unknown</option>
+              <option value="all">All prices</option>
+              <option value="free">🆓 Free</option>
+              <option value="budget">🪙 Budget</option>
+              <option value="moderate">💸 Moderate</option>
+              <option value="premium">💰 Premium</option>
             </select>
           </div>
         </div>
       </div>
 
+      {/* Places Grid */}
       <div className={s.grid}>
         {places.map((place) => (
           <div
@@ -267,6 +298,7 @@ const Inspiration = () => {
             onClick={() => {
               setSelectedPlace(place);
               setIsModalOpen(true);
+              loadComments(place.id);
             }}
           >
             {place.photo_url ? (
@@ -290,7 +322,9 @@ const Inspiration = () => {
                     ★ {place.rating}
                   </span>
                 )}
-                <span className={s.priceTag}>{priceTierLabel(place.price_level)}</span>
+                <span className={s.priceTag}>
+                  {priceTierLabel(place.price_level)}
+                </span>
               </div>
             </div>
 
@@ -300,6 +334,7 @@ const Inspiration = () => {
         ))}
       </div>
 
+      {/* Load More Button */}
       {next && (
         <button
           className={s.loadMore}
@@ -309,6 +344,7 @@ const Inspiration = () => {
         </button>
       )}
 
+      {/* Modal */}
       {isModalOpen && selectedPlace && (
         <div
           className={s.modalOverlay}
@@ -388,6 +424,90 @@ const Inspiration = () => {
                   ✈️ Add to trip
                 </button>
               </div>
+
+              {/* COMMENTS — ОБНОВЛЕННАЯ ВЕРСИЯ */}
+<div className={s.commentsSection}>
+  <h3>
+    Comments
+    {comments.length > 0 && (
+      <span className={s.commentCount}>{comments.length}</span>
+    )}
+  </h3>
+  
+  <div className={s.commentsContainer}>
+    {loadingComments && (
+      <div className={s.loadingComments}>
+        Loading comments...
+      </div>
+    )}
+    
+    {!loadingComments && comments.length === 0 && (
+      <div className={s.emptyComments}>
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M8 12h8M8 8h8M8 16h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+        <span>No comments yet</span>
+        <span style={{ fontSize: '12px', marginTop: '4px' }}>Be the first to share your thoughts!</span>
+      </div>
+    )}
+    
+    {!loadingComments && comments.map((comment) => (
+      <div key={comment.id} className={s.comment}>
+        <div className={s.commentHeader}>
+          <div className={s.userAvatar}>
+            {comment.username?.charAt(0).toUpperCase() || 'U'}
+          </div>
+          <strong>{comment.username || 'Anonymous'}</strong>
+          {comment.is_trip_advisor && (
+            <span className={s.tripAdvisorBadge}>
+              ✓ TripAdvisor
+            </span>
+          )}
+        </div>
+        <p>{comment.comment_text}</p>
+        {comment.created_at && (
+          <small className={s.commentDate}>
+            {new Date(comment.created_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </small>
+        )}
+      </div>
+    ))}
+  </div>
+  
+  {isAuthed ? (
+    <div className={s.addComment}>
+      <textarea
+        placeholder="Share your experience... 💭"
+        value={newComment}
+        onChange={(e) => setNewComment(e.target.value)}
+        rows="3"
+      />
+      <button
+        className={s.commentBtn}
+        onClick={handleAddComment}
+        disabled={!newComment.trim()}
+      >
+        Post Comment
+      </button>
+    </div>
+  ) : (
+    <div className={s.loginHint}>
+      <button 
+        className={s.loginLink}
+        onClick={() => navigate("/login")}
+      >
+        Sign in
+      </button> to join the conversation
+    </div>
+  )}
+</div>
             </div>
 
             <button
