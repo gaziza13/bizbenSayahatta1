@@ -8,6 +8,7 @@ from .models import (
     TripAdvisorApplication,
     TripAdvisorProfile,
     Trip,
+    TripMedia,
     TripVersion,
     WishlistFolder,
     WishlistItem,
@@ -118,7 +119,7 @@ class TripAdvisorProfileUpdateSerializer(serializers.ModelSerializer):
 
 
 class TripSerializer(serializers.ModelSerializer):
-    advisor_id = serializers.IntegerField(source="advisor_id", read_only=True)
+    advisor_id = serializers.IntegerField(read_only=True)
     category = AdvisorCategorySerializer(read_only=True)
     category_id = serializers.IntegerField(write_only=True)
 
@@ -178,6 +179,13 @@ class TripSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError({"category_id": "Trip category must match advisor profile categories."})
         return attrs
 
+    def validate_price(self, value):
+        if value is None:
+            return value
+        if value < 0:
+            raise serializers.ValidationError("Price must be zero or greater.")
+        return value
+
 
 class TripUpdateSerializer(serializers.ModelSerializer):
     category_id = serializers.IntegerField(required=False)
@@ -213,6 +221,20 @@ class TripVersionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TripVersion
         fields = ("id", "version", "snapshot", "created_by", "created_at")
+
+
+class TripMediaSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TripMedia
+        fields = ("id", "url", "created_at")
+
+    def get_url(self, obj):
+        try:
+            return obj.file.url
+        except ValueError:
+            return ""
 
 
 class WishlistItemSerializer(serializers.ModelSerializer):

@@ -6,3 +6,5 @@ DATABASES = {
         "NAME": ":memory:",
     }
 }
+
+DEBUG_PROPAGATE_EXCEPTIONS = True

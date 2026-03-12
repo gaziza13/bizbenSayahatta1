@@ -16,6 +16,7 @@ urlpatterns = [
     path("advisor/trips/<int:trip_id>/update/", views.AdvisorTripUpdateView.as_view(), name="advisor-trip-update"),
     path("advisor/trips/<int:trip_id>/submit/", views.AdvisorTripSubmitView.as_view(), name="advisor-trip-submit"),
     path("advisor/trips/<int:trip_id>/versions/", views.AdvisorTripVersionsView.as_view(), name="advisor-trip-versions"),
+    path("advisor/trips/<int:trip_id>/media/", views.AdvisorTripMediaUploadView.as_view(), name="advisor-trip-media-upload"),
     path("advisor/threads/<int:thread_id>/convert/", views.ConvertThreadToTripView.as_view(), name="advisor-convert-thread"),
 
     path("wishlist/folders/", views.WishlistFolderListCreateView.as_view(), name="wishlist-folder-list-create"),

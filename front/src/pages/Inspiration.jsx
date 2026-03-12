@@ -9,6 +9,12 @@ import api from "../api/axios";
 
 const categories = ["all", "restaurant", "museum", "tourist_attraction"];
 
+function toList(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.results)) return data.results;
+  return [];
+}
+
 function normalizePriceTier(priceLevel) {
   if (priceLevel === null || priceLevel === undefined || priceLevel === "") {
     return "unknown";
@@ -35,7 +41,7 @@ function priceTierLabel(priceLevel) {
   if (tier === "budget") return "🪙";
   if (tier === "moderate") return "💸";
   if (tier === "premium") return "💰";
-  return "🧐";
+  return "Unknown";
 }
 
 const Inspiration = () => {
@@ -49,11 +55,28 @@ const Inspiration = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [isTripModalOpen, setIsTripModalOpen] = useState(false);
+  const [tripCategories, setTripCategories] = useState([]);
+  const [tripForm, setTripForm] = useState({
+    title: "",
+    category_id: "",
+    destination: "",
+    start_date: "",
+    duration_days: 1,
+    budget: "",
+    additional_info: "",
+    photo_url: "",
+  });
+  const [tripUploadPreview, setTripUploadPreview] = useState("");
+  const [tripSubmitting, setTripSubmitting] = useState(false);
+  const [tripError, setTripError] = useState("");
+  const [tripSuccess, setTripSuccess] = useState("");
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const isAuthed = Boolean(localStorage.getItem("access"));
+  const isTripAdvisor = user?.role === "TRIPADVISOR" || user?.role === "ADMIN";
 
   const preferenceFilters = useMemo(() => {
     const prefs = user?.preferences || {};
@@ -156,6 +179,107 @@ const Inspiration = () => {
     navigate("/trip");
   };
 
+  const openTripModal = () => {
+    if (!isAuthed) {
+      navigate("/login");
+      return;
+    }
+    if (!isTripAdvisor) return;
+
+    setTripError("");
+    setTripSuccess("");
+    setIsTripModalOpen(true);
+  };
+
+  const closeTripModal = () => {
+    setIsTripModalOpen(false);
+    setTripError("");
+    setTripSuccess("");
+    setTripSubmitting(false);
+  };
+
+  const updateTripForm = (patch) => {
+    setTripForm((prev) => ({ ...prev, ...patch }));
+  };
+
+  const handleTripFileUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setTripUploadPreview("");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      setTripUploadPreview(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmitTrip = async (event) => {
+    event.preventDefault();
+    if (!tripForm.category_id || !tripForm.title || !tripForm.destination) {
+      setTripError("Please заполните category, trip name, и destination.");
+      return;
+    }
+
+    setTripSubmitting(true);
+    setTripError("");
+    setTripSuccess("");
+
+    const availableDates = tripForm.start_date ? [tripForm.start_date] : [];
+    const mediaUrls = [];
+    if (tripUploadPreview) mediaUrls.push(tripUploadPreview);
+    if (tripForm.photo_url) mediaUrls.push(tripForm.photo_url);
+
+    try {
+      const createPayload = {
+        title: tripForm.title.trim(),
+        category_id: Number(tripForm.category_id),
+        destination: tripForm.destination.trim(),
+        duration_days: Number(tripForm.duration_days) || 1,
+        available_dates: availableDates,
+        price: tripForm.budget === "" ? 0 : Number(tripForm.budget),
+        itinerary_json: tripForm.additional_info
+          ? { notes: tripForm.additional_info.trim() }
+          : {},
+        media_urls: mediaUrls,
+        visibility: "PUBLIC",
+      };
+
+      const createRes = await api.post("marketplace/advisor/trips/", createPayload);
+      const createdId = createRes.data?.id;
+      if (!createdId) {
+        throw new Error("Trip creation failed.");
+      }
+
+      await api.post(`marketplace/advisor/trips/${createdId}/submit/`);
+
+      setTripSuccess("Trip submitted for review. Status: PENDING.");
+      setTripForm({
+        title: "",
+        category_id: "",
+        destination: "",
+        start_date: "",
+        duration_days: 1,
+        budget: "",
+        additional_info: "",
+        photo_url: "",
+      });
+      setTripUploadPreview("");
+    } catch (err) {
+      const responseData = err?.response?.data;
+      const detail = responseData?.detail || err?.userMessage || "Failed to submit trip.";
+      const errorFields = Array.isArray(responseData?.errors)
+        ? ` Check: ${responseData.errors.join(", ")}.`
+        : "";
+      const errorId = responseData?.error_id ? ` (error_id: ${responseData.error_id})` : "";
+      setTripError(`${detail}${errorFields}${errorId}`);
+    } finally {
+      setTripSubmitting(false);
+    }
+  };
+
   const loadPlaces = async () => {
     const data = await fetchInspirationPlaces(
       page,
@@ -196,6 +320,43 @@ const Inspiration = () => {
     loadPlaces();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search, category, priceFilter, preferenceFilters]);
+
+  useEffect(() => {
+    if (!isTripAdvisor || tripCategories.length > 0) return;
+
+    const loadCategories = async () => {
+      try {
+        const profileRes = await api.get("marketplace/advisor/profile/");
+        const profileCats = toList(profileRes.data?.categories);
+        if (profileCats.length > 0) {
+          setTripCategories(profileCats);
+          return;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+
+      try {
+        const res = await api.get("marketplace/categories/");
+        setTripCategories(toList(res.data));
+      } catch (err) {
+        console.error(err);
+        setTripCategories([]);
+      }
+    };
+
+    loadCategories();
+  }, [isTripAdvisor, tripCategories.length]);
+
+  useEffect(() => {
+    if (!isTripModalOpen) return;
+    if (!tripCategories.length) return;
+
+    const allowedIds = new Set(tripCategories.map((c) => String(c.id)));
+    if (!allowedIds.has(String(tripForm.category_id))) {
+      updateTripForm({ category_id: String(tripCategories[0].id) });
+    }
+  }, [isTripModalOpen, tripCategories, tripForm.category_id]);
 
   /* ---------------------------
      RENDER
@@ -257,6 +418,14 @@ const Inspiration = () => {
             </select>
           </div>
         </div>
+
+        {isTripAdvisor && (
+          <div className={s.tripActionRow}>
+            <button className={s.primaryActionBtn} onClick={openTripModal}>
+              Add Trip
+            </button>
+          </div>
+        )}
       </div>
 
       <div className={s.grid}>
@@ -396,6 +565,145 @@ const Inspiration = () => {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {isTripModalOpen && (
+        <div className={s.modalOverlay} onClick={closeTripModal}>
+          <div
+            className={s.tripModal}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={s.tripModalHeader}>
+              <h2>Add New Trip</h2>
+              <p>Fill in the details and submit for manager review.</p>
+            </div>
+
+            <form className={s.tripForm} onSubmit={handleSubmitTrip}>
+              <label className={s.tripField}>
+                <span>Category</span>
+                <select
+                  value={tripForm.category_id}
+                  onChange={(e) => updateTripForm({ category_id: e.target.value })}
+                  required
+                >
+                  <option value="">Select category</option>
+                  {tripCategories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={s.tripField}>
+                <span>Trip Name</span>
+                <input
+                  type="text"
+                  value={tripForm.title}
+                  onChange={(e) => updateTripForm({ title: e.target.value })}
+                  placeholder="Hiking weekend in Almaty"
+                  required
+                />
+              </label>
+
+              <label className={s.tripField}>
+                <span>Place or places</span>
+                <input
+                  type="text"
+                  value={tripForm.destination}
+                  onChange={(e) => updateTripForm({ destination: e.target.value })}
+                  placeholder="Big Almaty Lake, Kok-Tobe"
+                  required
+                />
+              </label>
+
+              <div className={s.tripFieldRow}>
+                <label className={s.tripField}>
+                  <span>Start date</span>
+                  <input
+                    type="date"
+                    value={tripForm.start_date}
+                    onChange={(e) => updateTripForm({ start_date: e.target.value })}
+                  />
+                </label>
+
+                <label className={s.tripField}>
+                  <span>Duration (days)</span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={tripForm.duration_days}
+                    onChange={(e) => updateTripForm({ duration_days: e.target.value })}
+                  />
+                </label>
+              </div>
+
+              <label className={s.tripField}>
+                <span>Budget (USD)</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={tripForm.budget}
+                  onChange={(e) => updateTripForm({ budget: e.target.value })}
+                  placeholder="250"
+                />
+              </label>
+
+              <label className={s.tripField}>
+                <span>Photo URL (optional)</span>
+                <input
+                  type="url"
+                  value={tripForm.photo_url}
+                  onChange={(e) => updateTripForm({ photo_url: e.target.value })}
+                  placeholder="https://..."
+                />
+              </label>
+
+              <label className={s.tripField}>
+                <span>Upload photo (optional)</span>
+                <input type="file" accept="image/*" onChange={handleTripFileUpload} />
+                {tripUploadPreview && (
+                  <img
+                    className={s.tripPreview}
+                    src={tripUploadPreview}
+                    alt="Trip preview"
+                  />
+                )}
+              </label>
+
+              <label className={s.tripField}>
+                <span>Additional information</span>
+                <textarea
+                  rows="4"
+                  value={tripForm.additional_info}
+                  onChange={(e) => updateTripForm({ additional_info: e.target.value })}
+                  placeholder="Describe your plan, what is included, and any notes."
+                />
+              </label>
+
+              {tripError && <div className={s.tripError}>{tripError}</div>}
+              {tripSuccess && <div className={s.tripSuccess}>{tripSuccess}</div>}
+
+              <div className={s.tripActions}>
+                <button
+                  type="button"
+                  className={s.secondaryActionBtn}
+                  onClick={closeTripModal}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={s.primaryActionBtn}
+                  disabled={tripSubmitting}
+                >
+                  {tripSubmitting ? "Submitting..." : "Add Trip"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

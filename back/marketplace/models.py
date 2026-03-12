@@ -137,6 +137,16 @@ class Trip(models.Model):
         ]
 
 
+class TripMedia(models.Model):
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name="media")
+    file = models.FileField(upload_to="trip_media/")
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
 class TripVersion(models.Model):
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name="versions")
     version = models.PositiveIntegerField()

@@ -248,8 +248,6 @@ export default function ProfileCard() {
           ) : (
             <div className="advisor-panel">
               <strong>TripAdvisor tools are active</strong>
-              <Link to="/trip">My trips</Link>
-              <Link to="/chat">Create trip in chat</Link>
               <p>Now you can create and publish TripAdvisor packages.</p>
             </div>
           )}

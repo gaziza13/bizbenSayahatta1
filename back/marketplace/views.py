@@ -1,9 +1,11 @@
+from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.views import APIView
 
 from llm.models import ChatThread
@@ -15,6 +17,7 @@ from .models import (
     TripAdvisorApplication,
     TripAdvisorProfile,
     Trip,
+    TripMedia,
     WishlistFolder,
     WishlistItem,
     UserRestriction,
@@ -34,6 +37,7 @@ from .serializers import (
     TripUpdateSerializer,
     TripModerationSerializer,
     TripVersionSerializer,
+    TripMediaSerializer,
     WishlistFolderSerializer,
     WishlistItemSerializer,
     UserRestrictionSerializer,
@@ -150,28 +154,34 @@ class AdvisorTripListCreateView(APIView):
     def post(self, request):
         serializer = TripSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        category = AdvisorCategory.objects.get(id=serializer.validated_data["category_id"])
-        trip = Trip.objects.create(
-            advisor=request.user,
-            category=category,
-            title=serializer.validated_data["title"],
-            destination=serializer.validated_data["destination"],
-            duration_days=serializer.validated_data.get("duration_days", 1),
-            available_dates=serializer.validated_data.get("available_dates", []),
-            booked_hotels=serializer.validated_data.get("booked_hotels", []),
-            restaurants=serializer.validated_data.get("restaurants", []),
-            itinerary_json=serializer.validated_data.get("itinerary_json", {}),
-            included_services=serializer.validated_data.get("included_services", []),
-            advisor_advantages=serializer.validated_data.get("advisor_advantages", []),
-            price=serializer.validated_data.get("price", 0),
-            social_links=serializer.validated_data.get("social_links", {}),
-            map_route=serializer.validated_data.get("map_route", {}),
-            media_urls=serializer.validated_data.get("media_urls", []),
-            customer_user=serializer.validated_data.get("customer_user"),
-            visibility=serializer.validated_data.get("visibility", Trip.VISIBILITY_PRIVATE),
-            status=Trip.STATUS_DRAFT,
-        )
-        create_trip_version(trip=trip, actor=request.user)
+
+        category = AdvisorCategory.objects.filter(id=serializer.validated_data["category_id"], is_active=True).first()
+        if not category:
+            return Response({"detail": "Category not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            trip = Trip.objects.create(
+                advisor=request.user,
+                category=category,
+                title=serializer.validated_data["title"],
+                destination=serializer.validated_data["destination"],
+                duration_days=serializer.validated_data.get("duration_days", 1),
+                available_dates=serializer.validated_data.get("available_dates", []),
+                booked_hotels=serializer.validated_data.get("booked_hotels", []),
+                restaurants=serializer.validated_data.get("restaurants", []),
+                itinerary_json=serializer.validated_data.get("itinerary_json", {}),
+                included_services=serializer.validated_data.get("included_services", []),
+                advisor_advantages=serializer.validated_data.get("advisor_advantages", []),
+                price=serializer.validated_data.get("price", 0),
+                social_links=serializer.validated_data.get("social_links", {}),
+                map_route=serializer.validated_data.get("map_route", {}),
+                media_urls=serializer.validated_data.get("media_urls", []),
+                customer_user=serializer.validated_data.get("customer_user"),
+                visibility=serializer.validated_data.get("visibility", Trip.VISIBILITY_PRIVATE),
+                status=Trip.STATUS_DRAFT,
+            )
+            create_trip_version(trip=trip, actor=request.user)
+
         return Response(TripSerializer(trip).data, status=status.HTTP_201_CREATED)
 
 
@@ -246,6 +256,34 @@ class AdvisorTripVersionsView(ListAPIView):
         if not trip:
             return Trip.objects.none()
         return trip.versions.all()
+
+
+class AdvisorTripMediaUploadView(APIView):
+    permission_classes = [IsAuthenticated, IsActiveAndNotBlocked, IsTripAdvisorRole]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, trip_id):
+        trip = Trip.objects.filter(id=trip_id, advisor=request.user).first()
+        if not trip:
+            return Response({"detail": "Trip not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        uploaded_file = request.FILES.get("file") or request.FILES.get("media")
+        if not uploaded_file:
+            return Response({"detail": "File is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        media = TripMedia.objects.create(trip=trip, file=uploaded_file, uploaded_by=request.user)
+        try:
+            media_url = media.file.url
+        except ValueError:
+            media_url = ""
+
+        if media_url:
+            trip.media_urls = list(trip.media_urls or [])
+            if media_url not in trip.media_urls:
+                trip.media_urls.append(media_url)
+                trip.save(update_fields=["media_urls", "updated_at"])
+
+        return Response(TripMediaSerializer(media).data, status=status.HTTP_201_CREATED)
 
 
 class ConvertThreadToTripView(APIView):

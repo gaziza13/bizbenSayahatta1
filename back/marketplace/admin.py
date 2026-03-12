@@ -6,6 +6,7 @@ from .models import (
     TripAdvisorProfile,
     UserRestriction,
     Trip,
+    TripMedia,
     TripVersion,
     WishlistFolder,
     WishlistItem,
@@ -20,6 +21,7 @@ admin.site.register(TripAdvisorApplication)
 admin.site.register(TripAdvisorProfile)
 admin.site.register(UserRestriction)
 admin.site.register(Trip)
+admin.site.register(TripMedia)
 admin.site.register(TripVersion)
 admin.site.register(WishlistFolder)
 admin.site.register(WishlistItem)
