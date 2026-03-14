@@ -1,178 +1,136 @@
-# 🌍 Bizben Sayahatta
+# BizbenSayahatta
 
-**Bizben Sayahatta** is a travel inspiration and discovery platform where users can explore locations, view them on an interactive map, and share experiences through comments.
+Bizben Sayahatta is a travel inspiration and discovery platform where users can explore locations, view them on an interactive map, and share experiences through comments.
 
-The project is built with a **Django REST API** backend and a **React** frontend — a full-stack architecture where the server exposes REST endpoints and the client consumes them to create an interactive travel experience.
+The project is built with a Django REST API backend and a React frontend — a full-stack architecture where the server exposes REST endpoints and the client consumes them to create an interactive travel experience.
 
+The project is split into two main folders:
 
-## ✨ Features
+- **`back/`** — backend (Django REST API)
+- **`front/`** — frontend (React + Vite)
 
-- Explore travel destinations
-- View places on an interactive map
-- See detailed information about each location
-- Leave comments under places
-- REST API communication between frontend and backend
-- Modular backend structure for easy scalability
+---
 
+## Backend (Django)
 
-## 🛠 Tech Stack
+### Tech stack
 
-### Backend
-- Python
+- Python 3
 - Django
 - Django REST Framework
-- Pillow
-- PostgreSQL / SQLite
+- Simple JWT (token auth)
+- django-cors-headers, django-filter, python-dotenv
+- PostgreSQL (via dj-database-url)
+- Dependencies: see `back/requirements-base.txt`
 
-### Frontend
-- React
-- JavaScript
-- Vite
-- Leaflet + React Leaflet
-- React Simple Maps
+### Setup
 
+1. Go to the backend folder:
+   ```bash
+   cd back
+   ```
 
-## 📁 Project Structure
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   # macOS / Linux:
+   source venv/bin/activate
+   # Windows:
+   venv\Scripts\activate
+   ```
 
-```
-BizbenSayahatta/
-│
-├── back/               # Django backend (API)
-│   ├── manage.py
-│   ├── apps/
-│   ├── models/
-│   ├── serializers/
-│   └── views/
-│
-├── front/              # React frontend
-│   ├── src/
-│   ├── components/
-│   ├── pages/
-│   └── main.jsx
-│
-└── README.md
-```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements-base.txt
+   pip install Pillow   # if using image fields (avatars, etc.)
+   ```
 
+4. Create a `.env` file in `back/` (see **Environment variables** below). Do not commit `.env` to git.
 
+5. Apply migrations and run the server:
+   ```bash
+   python manage.py makemigrations
+   python manage.py migrate
+   python manage.py runserver
+   ```
 
-## 🚀 Getting Started
+Backend runs at **http://127.0.0.1:8000/**.
 
-### Backend
+### Main API routes
 
-**1. Navigate to the backend folder**
-```bash
-cd back
-```
+| Prefix | Description |
+|--------|-------------|
+| `users/` | Signup, login (JWT), profile |
+| `api/places/` | Places, inspiration, save/visited, map places, **place comments** |
+| `api/marketplace/` | Trips, advisor categories, leaderboard, wishlists, manager/admin actions |
+| `llm/` | Travel chat, plan, chat threads |
+| `api/admin/` | Admin API: users, wishlists, visited places, threads, chat messages, **comments**, interests, audit log |
 
-**2. Create a virtual environment**
-```bash
-python -m venv venv
-```
+**Auth:** JWT. Obtain tokens via `POST /users/login/` (email + password). Use header: `Authorization: Bearer <access_token>`. Refresh: `POST /api/token/refresh/`.
 
-**3. Activate the virtual environment**
+**Place comments (Inspiration page):**
 
-macOS / Linux:
-```bash
-source venv/bin/activate
-```
+- `GET /api/places/{place_id}/comments/` — list comments (public)
+- `POST /api/places/{place_id}/comments/` — create comment (auth required); body: `{"comment_text": "..."}` (3–1000 chars, trimmed)
+- `DELETE /api/admin/comments/{comment_id}/` — delete comment (admin/manager only)
 
-Windows:
-```bash
-venv\Scripts\activate
-```
-
-**4. Install dependencies**
-```bash
-pip install Pillow
-pip install -r requirements-base.txt
-```
-
-**5. Apply migrations**
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
-**6. Start the server**
-```bash
-python manage.py runserver
-```
-
-The backend will be available at: `http://127.0.0.1:8000/`
-
-
-
-### Frontend
-
-**1. Navigate to the frontend folder**
-```bash
-cd front
-```
-
-**2. Install dependencies**
-```bash
-npm install
-npm install react-simple-maps --legacy-peer-deps
-npm install react-leaflet leaflet
-```
-
-**3. Start the app**
-```bash
-npm run dev
-```
-
-The frontend will be available at: `http://localhost:5174/`
-
-
-
-## 🔐 Environment Variables
-
-Create a `.env` file inside the backend folder (`back/.env`):
-
-```env
-SECRET_KEY=your_secret_key
-DEBUG=True
-DATABASE_URL=your_database_url
-```
-
-> ⚠️ Never commit `.env` files to Git. Make sure they are listed in `.gitignore`.
-
-
-
-## 📡 API Overview
-Example endpoints:
-
-| Method | Endpoint            | Description          |
-|--------|---------------------|----------------------|
-| GET    | `/api/places/`      | Get all places       |
-| GET    | `/api/places/{id}/` | Get place by ID      |
-| GET    | `/api/comments/`    | Get all comments     |
-| POST   | `/api/comments/`    | Create a comment     |
-
-The React frontend communicates with the Django backend through these REST API endpoints.
 
 ## Database Schema
 ![Database Schema](back/graphs/schema4.png)
-## 🗺 Map Integration
+---
 
-The project uses **Leaflet** and **React Leaflet** to display travel locations on an interactive map, letting users visually explore destinations.
+## Frontend (React)
 
+### Tech stack
 
+- React 19
+- Vite 7
+- React Router
+- Redux Toolkit
+- Axios
+- React Leaflet / Leaflet
+- React Markdown
 
-## 🔮 Future Improvements
+### Setup
 
-- [ ] User authentication (JWT)
-- [ ] User profiles
-- [ ] Favorite places
-- [ ] Ratings and reviews
-- [ ] Travel itinerary builder
-- [ ] Admin moderation tools
+1. Go to the frontend folder:
+   ```bash
+   cd front
+   ```
 
+2. Install dependencies:
+   ```bash
+   npm install
+   npm install react-simple-maps --legacy-peer-deps   # if needed
+   npm install react-leaflet leaflet                  # if using maps
+   ```
 
+3. Create a `.env` in `front/` if needed (e.g. `VITE_API_BASE=http://127.0.0.1:8000`). Do not commit `.env` to git.
+
+4. Run the dev server:
+   ```bash
+   npm run dev
+   ```
+
+Frontend runs at **http://localhost:5174/** (or the port Vite prints).
+
+---
+
+## Environment variables
+
+- **Backend (`back/.env`):**  
+  `SECRET_KEY`, `DEBUG`, `DATABASE_URL`, `OPENAI_API_KEY`, `GOOGLE_MAPS_API_KEY`, etc. Do not commit `.env` files.
+
+- **Frontend (`front/.env`):**  
+  e.g. `VITE_API_BASE` for the API base URL.
+
+---
 
 ## Authors
-Project developed by
+
+Project developed by 
 - Abilmazhinova Aisha
 - Abitova Dina
 - Ashimbekova Sabina
 - Akhmetzhan Gaziza
+
