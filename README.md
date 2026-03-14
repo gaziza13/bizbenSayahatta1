@@ -4,7 +4,6 @@
 
 The project is built with a **Django REST API** backend and a **React** frontend — a full-stack architecture where the server exposes REST endpoints and the client consumes them to create an interactive travel experience.
 
----
 
 ## ✨ Features
 
@@ -15,7 +14,6 @@ The project is built with a **Django REST API** backend and a **React** frontend
 - REST API communication between frontend and backend
 - Modular backend structure for easy scalability
 
----
 
 ## 🛠 Tech Stack
 
@@ -33,7 +31,6 @@ The project is built with a **Django REST API** backend and a **React** frontend
 - Leaflet + React Leaflet
 - React Simple Maps
 
----
 
 ## 📁 Project Structure
 
@@ -56,7 +53,7 @@ BizbenSayahatta/
 └── README.md
 ```
 
----
+
 
 ## 🚀 Getting Started
 
@@ -103,7 +100,7 @@ python manage.py runserver
 
 The backend will be available at: `http://127.0.0.1:8000/`
 
----
+
 
 ### Frontend
 
@@ -126,7 +123,7 @@ npm run dev
 
 The frontend will be available at: `http://localhost:5174/`
 
----
+
 
 ## 🔐 Environment Variables
 
@@ -140,9 +137,10 @@ DATABASE_URL=your_database_url
 
 > ⚠️ Never commit `.env` files to Git. Make sure they are listed in `.gitignore`.
 
----
+
 
 ## 📡 API Overview
+Example endpoints:
 
 | Method | Endpoint            | Description          |
 |--------|---------------------|----------------------|
@@ -153,13 +151,13 @@ DATABASE_URL=your_database_url
 
 The React frontend communicates with the Django backend through these REST API endpoints.
 
----
+
 
 ## 🗺 Map Integration
 
 The project uses **Leaflet** and **React Leaflet** to display travel locations on an interactive map, letting users visually explore destinations.
 
----
+
 
 ## 🔮 Future Improvements
 
@@ -170,7 +168,7 @@ The project uses **Leaflet** and **React Leaflet** to display travel locations o
 - [ ] Travel itinerary builder
 - [ ] Admin moderation tools
 
----
+
 
 ## Authors
 Project developed by
