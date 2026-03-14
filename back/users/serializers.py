@@ -1,7 +1,21 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import User, UserPreferences
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Accept email + password for login (User.USERNAME_FIELD is email)."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"] = serializers.EmailField(required=True)
+        self.fields.pop("username", None)
+
+    def validate(self, attrs):
+        # Map email to username for parent's authenticate()
+        attrs["username"] = attrs.get("email", "")
+        return super().validate(attrs)
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -12,6 +26,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("email", "username", "password", "password2", "avatar", "cover", "referral_code")
+        extra_kwargs = {
+            "username": {"required": False, "allow_blank": True},
+            "avatar": {"required": False, "allow_null": True},
+            "cover": {"required": False, "allow_null": True},
+        }
 
     def validate(self, attrs):
         if attrs["password"] != attrs["password2"]:
@@ -21,12 +40,15 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_password(self, value):
         validate_password(value)
         return value
-
+    
     def create(self, validated_data):
         referral_code = validated_data.pop("referral_code", "")
+        password = validated_data.pop("password")  
         validated_data.pop("password2")
-        user = User.objects.create_user(**validated_data)
+
+        user = User.objects.create_user(password=password, **validated_data)
         UserPreferences.objects.create(user=user)
+
         if referral_code:
             from marketplace.services.referral import reward_referral_if_eligible
             reward_referral_if_eligible(referred_user=user, referral_code=referral_code)
@@ -64,3 +86,4 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("username", "avatar", "cover")
+

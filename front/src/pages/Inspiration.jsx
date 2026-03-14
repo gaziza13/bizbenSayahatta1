@@ -76,6 +76,7 @@ const Inspiration = () => {
     category_id: "",
     destination: "",
     start_date: "",
+    end_date: "",
     duration_days: 1,
     budget: "",
     additional_info: "",
@@ -256,6 +257,18 @@ const Inspiration = () => {
     setTripForm((prev) => ({ ...prev, ...patch }));
   };
 
+  const computeDurationDays = (start, end) => {
+    if (!start || !end) return Number(tripForm.duration_days) || 1;
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      return Number(tripForm.duration_days) || 1;
+    }
+    const diffMs = endDate.getTime() - startDate.getTime();
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+    return Math.max(1, days);
+  };
+
   const handleTripFileUpload = (event) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -272,8 +285,8 @@ const Inspiration = () => {
 
   const handleSubmitTrip = async (event) => {
     event.preventDefault();
-    if (!tripForm.category_id || !tripForm.title || !tripForm.destination) {
-      setTripError("Please fill category, trip name, and destination.");
+    if (!tripForm.title || !tripForm.destination) {
+      setTripError("Please fill trip name and place.");
       return;
     }
 
@@ -287,11 +300,20 @@ const Inspiration = () => {
     if (tripForm.photo_url) mediaUrls.push(tripForm.photo_url);
 
     try {
+      const resolvedCategoryId =
+        tripForm.category_id || (tripCategories[0]?.id ? String(tripCategories[0].id) : "");
+      if (!resolvedCategoryId) {
+        setTripError("No available category. Please try again later.");
+        setTripSubmitting(false);
+        return;
+      }
+
+      const durationDays = computeDurationDays(tripForm.start_date, tripForm.end_date);
       const createPayload = {
         title: tripForm.title.trim(),
-        category_id: Number(tripForm.category_id),
+        category_id: Number(resolvedCategoryId),
         destination: tripForm.destination.trim(),
-        duration_days: Number(tripForm.duration_days) || 1,
+        duration_days: durationDays,
         available_dates: availableDates,
         price: tripForm.budget === "" ? 0 : Number(tripForm.budget),
         itinerary_json: tripForm.additional_info
@@ -315,6 +337,7 @@ const Inspiration = () => {
         category_id: "",
         destination: "",
         start_date: "",
+        end_date: "",
         duration_days: 1,
         budget: "",
         additional_info: "",

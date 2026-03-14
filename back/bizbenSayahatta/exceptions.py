@@ -63,8 +63,16 @@ def custom_exception_handler(exc, context):
     if response.status_code == 400:
         error_id = uuid.uuid4().hex
         error_fields = []
+        field_errors = {}
         if isinstance(response.data, dict):
             error_fields = [key for key in response.data.keys() if key != "detail"]
+            for key, value in response.data.items():
+                if key == "detail":
+                    continue
+                if isinstance(value, list):
+                    field_errors[key] = " ".join([str(item) for item in value])
+                elif isinstance(value, str):
+                    field_errors[key] = value
 
         logger.warning(
             "Validation error",
@@ -80,11 +88,17 @@ def custom_exception_handler(exc, context):
             },
         )
 
+        # Keep validation errors visible to the client (e.g. signup password rules)
+        detail_msg = "Invalid request payload."
+        if field_errors:
+            parts = [f"{k}: {v}" for k, v in field_errors.items()]
+            detail_msg = " ".join(parts)
         response.data = {
-            "detail": "Invalid request payload.",
+            "detail": detail_msg,
             "status_code": response.status_code,
             "error_id": error_id,
             "errors": error_fields,
+            "field_errors": field_errors,
         }
         return response
 

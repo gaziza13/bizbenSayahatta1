@@ -16,21 +16,25 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView
 from django.conf.urls.static import static
 from django.conf import settings
+
+from users.views import CustomTokenObtainPairView
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/admin/', include('admin_api.urls')),
+    path('api/users/', include('users.urls')),
     path('users/', include('users.urls')),
-    path('llm/', include('llm.urls')),
+    # path('llm/', include('llm.urls')),
+    path('api/llm/', include('llm.urls')),
     path("api/places/", include("places.urls")),
     path("api/places/", include("marketplace.comment_urls")),
     path("api/marketplace/", include("marketplace.urls")),
-    path('api/token/', TokenObtainPairView.as_view()),
-    path('token/', TokenObtainPairView.as_view()),
+    path('api/token/', CustomTokenObtainPairView.as_view()),
+    path('token/', CustomTokenObtainPairView.as_view()),
     path('api/token/refresh/', TokenRefreshView.as_view()),
     path("marketplace/", include("marketplace.urls")),
 ]

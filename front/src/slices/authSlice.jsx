@@ -10,7 +10,8 @@ export const signUpUser = createAsyncThunk(
       const res = await api.post("users/signup/", data);
       return res.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || "Signup failed");
+      const data = err.response?.data;
+      return rejectWithValue(data && typeof data === "object" ? data : data || "Signup failed");
     }
   }
 );
@@ -18,12 +19,13 @@ export const signUpUser = createAsyncThunk(
 /* LOGIN */
 export const loginUser = createAsyncThunk(
   "auth/login",
-  async (data, { rejectWithValue }) => {
+  async (data, { dispatch, rejectWithValue }) => {
     try {
       const res = await api.post("token/", data);
       resetClientUserDataOnSessionChange(res.data.access);
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
+      await dispatch(fetchProfile());
       return res.data;
     } catch (err) {
       clearClientUserData();

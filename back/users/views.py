@@ -2,15 +2,23 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import User, UserPreferences
+from marketplace.models import TripAdvisorApplication, TripAdvisorProfile
 from .permissions import IsActiveAndNotBlocked
 from .serializers import (
+    CustomTokenObtainPairSerializer,
     RegisterSerializer,
     UserPreferencesSerializer,
     UserSerializer,
     UserUpdateSerializer,
 )
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """JWT login that accepts email + password."""
+    serializer_class = CustomTokenObtainPairSerializer
 
 
 class RegisterView(generics.CreateAPIView):
@@ -23,6 +31,15 @@ class UserProfileView(APIView):
 
     def get(self, request):
         UserPreferences.objects.get_or_create(user=request.user)
+        if request.user.role == User.Role.USER:
+            approved_exists = TripAdvisorApplication.objects.filter(
+                user=request.user,
+                status=TripAdvisorApplication.STATUS_APPROVED
+            ).exists()
+            if approved_exists:
+                request.user.role = User.Role.TRIPADVISOR
+                request.user.save(update_fields=["role"])
+                TripAdvisorProfile.objects.get_or_create(user=request.user)
         return Response(UserSerializer(request.user).data)
 
     def put(self, request):

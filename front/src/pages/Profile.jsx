@@ -117,6 +117,12 @@ export default function ProfileCard() {
     return { code: "NONE", label: "Not applied" };
   }, [user, latestApplication]);
 
+  useEffect(() => {
+    if (latestApplication?.status === "APPROVED" && user?.role !== "TRIPADVISOR") {
+      dispatch(fetchProfile());
+    }
+  }, [latestApplication?.status, user?.role, dispatch]);
+
   const fileToBase64 = (file) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -204,6 +210,7 @@ export default function ProfileCard() {
       await api.post("marketplace/advisor/apply/", formData);
       const applicationsRes = await api.get("marketplace/advisor/applications/");
       setApplications(toList(applicationsRes.data));
+      setAdvisorModalOpen(false);
       setAdvisorSuccess("Application sent. Status is now Pending review.");
     } catch (err) {
       const backend = err?.response?.data;
@@ -239,6 +246,7 @@ export default function ProfileCard() {
           <div className="style"><span>Travel style:</span><strong>{travelStyle}</strong></div>
           <div className="style"><span>Role:</span><strong>{user?.role || "USER"}</strong></div>
           <div className="style"><span>TripAdvisor status:</span><strong className={`advisor-status status-${advisorStatus.code.toLowerCase()}`}>{advisorStatus.label}</strong></div>
+          {advisorSuccess ? <p className="advisor-success">{advisorSuccess}</p> : null}
 
           {latestApplication?.review_reason ? <p className="advisor-note">Manager note: {latestApplication.review_reason}</p> : null}
 
@@ -252,7 +260,7 @@ export default function ProfileCard() {
               <div className="level">
                 <span>Check Trip status</span>
                 <Link to="/tripstatus">
-                  <button>check status</button>
+                <button>check status</button>
                 </Link>
               </div>
               <p>Now you can create and publish TripAdvisor packages.</p>

@@ -12,7 +12,11 @@ class UserManager(BaseUserManager):
             extra_fields["referral_code"] = get_random_string(10).upper()
 
         user = self.model(email=email, **extra_fields)
-        user.set_password(password)
+        # user.set_password(password)
+        if password:
+            user.set_password(password)   # 🔑 hashes the password
+        else:
+            user.set_unusable_password()
         user.save(using=self._db)
         return user
 
