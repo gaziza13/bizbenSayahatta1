@@ -169,3 +169,12 @@ The project uses **Leaflet** and **React Leaflet** to display travel locations o
 - [ ] Ratings and reviews
 - [ ] Travel itinerary builder
 - [ ] Admin moderation tools
+
+---
+
+## Authors
+Project developed by
+- Abilmazhinova Aisha
+- Abitova Dina
+- Ashimbekova Sabina
+- Akhmetzhan Gaziza
