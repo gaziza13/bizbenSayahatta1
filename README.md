@@ -142,12 +142,6 @@ DATABASE_URL=your_database_url
 
 ---
 
-## 🗄 Database Schema
-
-![Database Schema](./back/schema3.png)
-
----
-
 ## 📡 API Overview
 
 | Method | Endpoint            | Description          |
