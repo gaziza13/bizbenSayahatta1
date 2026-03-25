@@ -69,3 +69,11 @@ export const createMapPlace = async (payload) => {
 export const deleteMapPlace = async (placeId) => {
   await api.delete(`places/map-places/${placeId}/`);
 };
+
+export const markPlaceAsVisited = async (placeId) => {
+  const response = await api.post(
+    `places/places/${placeId}/visited/`,
+    {}
+  );
+  return response.data;
+};

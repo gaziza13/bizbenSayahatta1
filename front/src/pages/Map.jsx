@@ -2,7 +2,7 @@ import "../styles/Map.css";
 import "leaflet/dist/leaflet.css";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createMapPlace, deleteMapPlace, fetchMapPlaces } from "../api/places";
+import { createMapPlace, deleteMapPlace, fetchMapPlaces, markPlaceAsVisited, fetchInspirationPlaces } from "../api/places";
 import { LEVELS_LIST } from "../constants/mapConstants";
 import MapSidebar from "../components/map/MapSidebar";
 import MapView from "../components/map/MapView";
@@ -109,27 +109,68 @@ export default function Map() {
   };
 
   const addPlace = async (e) => {
-    e.preventDefault();
-    if (!newPlace.city || !newPlace.country) return;
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${newPlace.city},${newPlace.country}`);
-      const data = await res.json();
-      if (!data.length) { alert("City not found"); return; }
+  e.preventDefault();
+  if (!newPlace.city || !newPlace.country) return;
 
-      const created = await createMapPlace({
-        city: newPlace.city, country: newPlace.country,
-        date: `${newPlace.year}-${newPlace.month}`,
-        lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon),
-      });
+  try {
+    const searchRes = await fetchInspirationPlaces(1, newPlace.city);
+    const foundPlace = searchRes.results?.find(
+      (p) =>
+        p.city?.toLowerCase() === newPlace.city.toLowerCase() ||
+        p.country?.toLowerCase() === newPlace.country.toLowerCase()
+    );
 
-      setPlaces((prev) => [created, ...prev]);
-      setNewPlace({ city: "", country: "", month: currentMonth, year: String(currentYear) });
-      setIsModalOpen(false);
-    } catch (err) {
-      if (err?.response?.status === 401) { navigate("/login"); return; }
-      alert("Error fetching or saving location");
+    
+    let visitedResponse = null;
+    if (foundPlace) {
+      visitedResponse = await markPlaceAsVisited(foundPlace.id);
     }
-  };
+
+  
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${newPlace.city},${newPlace.country}`
+    );
+    const data = await res.json();
+
+    if (!data.length) {
+      alert("City not found");
+      return;
+    }
+
+    
+    const created = await createMapPlace({
+      city: newPlace.city,
+      country: newPlace.country,
+      date: `${newPlace.year}-${newPlace.month}`,
+      lat: parseFloat(data[0].lat),
+      lon: parseFloat(data[0].lon),
+    });
+
+    
+    setPlaces((prev) => [created, ...prev]);
+
+  
+    if (visitedResponse?.badges?.length) {
+      alert(`🎉 New badges: ${visitedResponse.badges.join(", ")}`);
+    }
+
+    setNewPlace({
+      city: "",
+      country: "",
+      month: currentMonth,
+      year: String(currentYear),
+    });
+    setIsModalOpen(false);
+
+  } catch (err) {
+    if (err?.response?.status === 401) {
+      navigate("/login");
+      return;
+    }
+    console.error(err);
+    alert("Error adding place");
+  }
+};
 
   const removePlace = async (placeId) => {
     try {
