@@ -49,13 +49,19 @@ export default function TripPage() {
       setError("");
       try {
         const res = await api.get("llm/threads/");
-        const plannerThreads = (res.data || []).filter((thread) => thread.kind === "planner");
-        const detailRequests = plannerThreads.map((thread) =>
+        const detailRequests = (res.data || []).map((thread) =>
           api.get(`llm/threads/${thread.id}/`)
         );
         const details = await Promise.all(detailRequests);
         const cards = details
-          .map((detail) => buildTripCard(detail.data))
+          .map((detail) => detail.data)
+          .filter((thread) => {
+            const itinerary = thread.plan_json?.itinerary || [];
+            return Boolean(thread.plan_json) && (
+              itinerary.length > 0 || Number(thread.plan_json?.days_generated || 0) > 0
+            );
+          })
+          .map((thread) => buildTripCard(thread))
           .sort((a, b) => b.id - a.id);
         setTrips(cards);
       } catch (err) {
@@ -181,3 +187,69 @@ export default function TripPage() {
     </div>
   );
 }
+
+
+
+
+// import { useEffect, useMemo, useState } from "react";
+// import api from "../api/axios";
+// import s from "../styles/Trips.module.css";
+// import { buildTripCard } from "../utils/tripHelpers";
+// import TripTabs from "../components/trips/TripTabs";
+// import TripCard from "../components/trips/TripCard";
+// import TripEmpty from "../components/trips/TripEmpty";
+
+// export default function TripPage() {
+//   const [trips, setTrips] = useState([]);
+//   const [tab, setTab] = useState("active");
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState("");
+
+//   useEffect(() => {
+//     const loadTrips = async () => {
+//       setLoading(true);
+//       setError("");
+//       try {
+//         const res = await api.get("llm/threads/");
+//         const plannerThreads = (res.data || []).filter((t) => t.kind === "planner");
+//         const details = await Promise.all(
+//           plannerThreads.map((t) => api.get(`llm/threads/${t.id}/`))
+//         );
+//         setTrips(details.map((d) => buildTripCard(d.data)).sort((a, b) => b.id - a.id));
+//       } catch (err) {
+//         setError(err.response?.data?.detail || "Failed to load trips");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     loadTrips();
+//   }, []);
+
+//   const activeTrips = useMemo(() => trips.filter((t) => t.status === "active"), [trips]);
+//   const pastTrips = useMemo(() => trips.filter((t) => t.status === "past"), [trips]);
+//   const visibleTrips = tab === "active" ? activeTrips : pastTrips;
+
+//   return (
+//     <div className={s.page}>
+//       <header className={s.header}>
+//         <h1 className={s.title}>My Trips</h1>
+//         <p className={s.subtitle}>Active and completed journeys in one place</p>
+//         <TripTabs
+//           tab={tab} onTabChange={setTab}
+//           activeCount={activeTrips.length} pastCount={pastTrips.length}
+//         />
+//       </header>
+
+//       {loading && <p className={s.meta}>Loading trips...</p>}
+//       {error && <p className={s.error}>{error}</p>}
+
+//       {!loading && !error && visibleTrips.length === 0 && <TripEmpty />}
+
+//       {!loading && !error && visibleTrips.length > 0 && (
+//         <main className={s.grid}>
+//           {visibleTrips.map((trip) => <TripCard key={trip.id} trip={trip} />)}
+//         </main>
+//       )}
+//     </div>
+//   );
+// }

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { toggleMustVisit } from "../api/places";
+import PlaceCard from "../components/places/PlaceCard";
+import cardStyles from "../styles/Inspiration.module.css";
 import "../styles/Wishlist.css";
 
 export default function Wishlist() {
@@ -108,81 +110,27 @@ export default function Wishlist() {
 
         {!loading &&
           filteredDestinations.map((destination) => (
-            <div key={destination.id} className="destination-card">
-              <div className="destination-image-container">
-                <img
-                  src={destination.photo_url}
-                  alt={destination.name}
-                  className="destination-image"
-                />
-
-                {/* Remove from wishlist */}
-                <button
-                  className="favorite-btn active"
-                  onClick={() => toggleFavorite(destination.id)}
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <defs>
-                      <linearGradient
-                        id="heartGradient"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="100%"
-                      >
-                        <stop offset="0%" stopColor="#ff6b6b" />
-                        <stop offset="100%" stopColor="#ee5a6f" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                      fill="url(#heartGradient)"
-                    />
-                  </svg>
-                </button>
-
-                <div className="destination-tags">
-                  <span
-                    className={`destination-tag tag-${destination.category}`}
-                  >
-                    {destination.category.replace("_", " ")}
-                  </span>
-                </div>
-              </div>
-
-              <div className="destination-content">
-                <h3 className="destination-name">{destination.name}</h3>
-
-                <p className="destination-location">
-                  {destination.city}, {destination.country}
-                </p>
-
-                {destination.rating && (
-                  <div className="destination-meta-row">
-                    ⭐ {destination.rating}
-                  </div>
-                )}
-
-                <a
-                  href="#"
-                  className="view-details-link"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setSelectedPlace(destination);
-                    setIsModalOpen(true);
-                  }}
-                >
-                  View Details →
-                </a>
-              </div>
-            </div>
+            <PlaceCard
+              key={destination.id}
+              place={destination}
+              variant="inspiration"
+              classes={{
+                card: cardStyles.card,
+                photo: cardStyles.photo,
+                photoPlaceholder: cardStyles.photoPlaceholder,
+                cardHeader: cardStyles.cardHeader,
+                category: cardStyles.category,
+                metaRow: cardStyles.metaRow,
+                rating: cardStyles.rating,
+                priceTag: cardStyles.priceTag,
+                name: cardStyles.name,
+                location: cardStyles.location,
+              }}
+              onOpen={() => {
+                setSelectedPlace(destination);
+                setIsModalOpen(true);
+              }}
+            />
           ))}
       </div>
 
@@ -221,12 +169,21 @@ export default function Wishlist() {
         </p>
       </div>
 
-      <button
-        className="lightActionBtn"
-        onClick={handleCreateTrip}
-      >
-        ✈️ Add to trip
-      </button>
+      <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+        <button
+          className="lightActionBtn"
+          onClick={() => toggleFavorite(selectedPlace.id)}
+        >
+          💚 Added to wishlist
+        </button>
+
+        <button
+          className="lightActionBtn"
+          onClick={handleCreateTrip}
+        >
+          ✈️ Add to trip
+        </button>
+      </div>
 
       <button
         className="modalClose"

@@ -8,13 +8,12 @@ export default function ProfileInfo({
 }) {
   return (
     <div className="info">
-      <span className="email">{email}</span>
-      <span className="username">{username}</span>
-
+      <div className="style"><span>Email:</span> <span className="email">{email}</span></div>
+      <div className="style"><span>Username:</span> <span className="username">{username}</span></div>
       <div className="style"><span>Travel style:</span><strong>{travelStyle}</strong></div>
-      <div className="style"><span>Role:</span><strong>{user?.role || "USER"}</strong></div>
-      <div className="style">
-        <span>TripAdvisor status:</span>
+      <div className="style"><span>Role:</span>
+      
+      <strong>{user?.role || "USER"}</strong>
         <strong className={`advisor-status status-${advisorStatus.code.toLowerCase()}`}>
           {advisorStatus.label}
         </strong>
@@ -40,7 +39,6 @@ export default function ProfileInfo({
             <span>Check Trip status</span>
             <Link to="/tripstatus"><button>check status</button></Link>
           </div>
-          <p>Now you can create and publish TripAdvisor packages.</p>
         </div>
       )}
 
@@ -50,7 +48,7 @@ export default function ProfileInfo({
 
       <div className="advisor-panel">
         <div className="level">
-          <span>Level of the user</span>
+          <span>Traveler Badge:</span>
           <Link to="/map">
             <button>upgrade level <img src={cupIcon} alt="Cup" width="15" height="15" /></button>
           </Link>
