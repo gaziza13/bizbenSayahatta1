@@ -4,6 +4,7 @@ djangorestframework-simplejwt
 django-cors-headers
 python-dotenv
 requests
+stripe
 django-filter
 openai
 pydotplus

@@ -22,6 +22,12 @@ load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+
+# Stripe (Payment Links + webhooks). Never commit real keys.
+STRIPE_SECRET_KEY = (os.getenv("STRIPE_SECRET_KEY") or "").strip()
+STRIPE_WEBHOOK_SECRET = (os.getenv("STRIPE_WEBHOOK_SECRET") or "").strip()
+# Base Payment Link URL (no query string). client_reference_id is appended per checkout.
+STRIPE_PAYMENT_LINK_URL = (os.getenv("STRIPE_PAYMENT_LINK_URL") or "").strip()
 DATABASE_URL = (os.getenv("DATABASE_URL") or "").strip()
 if (DATABASE_URL.startswith("b'") and DATABASE_URL.endswith("'")) or (
     DATABASE_URL.startswith('b"') and DATABASE_URL.endswith('"')
@@ -63,6 +69,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'admin_api',
     'marketplace',
+    'payments.apps.PaymentsConfig',
 ]
 
 MIDDLEWARE = [
@@ -229,6 +236,11 @@ LOGGING = {
         "bizbenSayahatta.errors": {
             "handlers": ["console"],
             "level": "ERROR",
+            "propagate": False,
+        },
+        "payments": {
+            "handlers": ["console"],
+            "level": "INFO",
             "propagate": False,
         },
     },

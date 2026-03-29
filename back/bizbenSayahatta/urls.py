@@ -33,6 +33,7 @@ urlpatterns = [
     path("api/places/", include("places.urls")),
     path("api/places/", include("marketplace.comment_urls")),
     path("api/marketplace/", include("marketplace.urls")),
+    path("api/payments/", include("payments.urls")),
     path('api/token/', CustomTokenObtainPairView.as_view()),
     path('token/', CustomTokenObtainPairView.as_view()),
     path('api/token/refresh/', TokenRefreshView.as_view()),
