@@ -17,6 +17,7 @@ export default function MapView({ places, countriesData, onOpenModal }) {
 
   return (
     <main className="map-area">
+
       <MapContainer center={[20, 0]} zoom={2} style={{ height: "100%", width: "100%" }}>
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
@@ -36,7 +37,27 @@ export default function MapView({ places, countriesData, onOpenModal }) {
           </CircleMarker>
         ))}
       </MapContainer>
+
+      {/* ADD VISITED PLACE */}
       <button className="add-place-btn" onClick={onOpenModal}>+ Add Visited Place</button>
+
+      {/* LEGEND BOX */}
+      <div className="map-legend">
+        <h4>Legend</h4>
+        <div className="legend-item">
+          <span className="legend-color visited-country"></span>
+          Visited Countries
+        </div>
+        <div className="legend-item">
+          <span className="legend-color unexplored-country"></span>
+          Unexplored
+        </div>
+        <div className="legend-item">
+          <span className="legend-color visited-city"></span>
+          City Visited
+        </div>
+      </div>
+
     </main>
   );
 }
