@@ -757,7 +757,7 @@
   margin-left: 8px;
 }
 
-/* ===== TESTIMONIALS FIX ===== */
+/* ===== TESTIMONIALS FINAL FIX ===== */
 
 .testimonials-section {
   margin-top: 100px;
@@ -771,60 +771,66 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  max-width: 1400px; /* В тон остальному контенту */
+  max-width: 1400px;
   margin: 0 auto;
 }
 
 .testimonials-track {
   display: flex;
-  overflow-x: hidden; /* Оставляем скрытие по горизонтали для слайдера */
-  overflow-y: visible; /* ВАЖНО: разрешаем рост по вертикали */
+  overflow-x: hidden;
+  overflow-y: visible;
   width: 100%;
   border-radius: 24px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  align-items: stretch; /* важно */
 }
 
 .testimonial-card {
   min-width: 100%;
-  /* Цвет #75B7C1 с прозрачностью 0.2 (сделайте 0.9 если нужен почти непрозрачный) */
-  background: rgba(117, 183, 193, 0.2); 
+  background: rgba(117, 183, 193, 0.7);
   backdrop-filter: blur(10px);
-  color: #1e293b; /* Темный текст для лучшей читаемости на светлом полупрозрачном фоне */
+  color: #1e293b;
+
   padding: 60px 100px;
   box-sizing: border-box;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  /* Убираем любые ограничения высоты */
-  height: auto; 
-  min-height: 400px; 
+
+  height: auto;
+  justify-content: flex-start; /* ключевой фикс */
 }
 
 .testimonial-header-label {
-  font-size: 14px;
+  font-size: 34px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: #75B7C1; /* Цвет заголовка в тон карточки */
+  color: #ffffff;
   margin-bottom: 30px;
 }
 
 .testimonial-text {
-  font-size: 24px;
-  line-height: 1.5;
+  font-size:28px;
+  line-height: 1.6;
   font-weight: 500;
-  font-style: italic;
+  color: #e3edf0;
   margin-bottom: 40px;
   max-width: 900px;
-  height: auto; /* Гарантируем, что блок текста не ограничен */
+
+  white-space: normal;
+  word-break: break-word;
+
+  height: auto;
   overflow: visible;
 }
 
 .testimonial-user h4 {
   font-size: 20px;
   margin: 0 0 5px 0;
-  color: #1e293b;
+  color: #ffffff;
 }
 
 .user-info-row {
@@ -835,7 +841,7 @@
 
 .trip {
   display: inline-block;
-  background: #75B7C1; /* Плашка в цвет темы */
+  background: #75B7C1;
   color: white;
   padding: 6px 16px;
   border-radius: 50px;
@@ -843,7 +849,7 @@
   font-weight: 600;
 }
 
-/* Кнопки теперь темные и круглые, чтобы не отвлекать */
+/* КНОПКИ */
 .testimonial-btn {
   background: #1e293b;
   color: #fff;
@@ -853,12 +859,15 @@
   border-radius: 50%;
   font-size: 18px;
   cursor: pointer;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   transition: all 0.2s ease;
   position: absolute;
   z-index: 10;
+
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
@@ -868,17 +877,4 @@
 .testimonial-btn:hover {
   background: #000;
   transform: scale(1.1);
-}
-
-/* Адаптив: на мобилках уменьшаем отступы, чтобы текст влез */
-@media (max-width: 768px) {
-  .testimonial-card {
-    padding: 40px 20px;
-  }
-  .testimonial-text {
-    font-size: 18px;
-  }
-  .testimonial-btn {
-    display: none; /* На мобилках лучше использовать свайп или маленькие кнопки внизу */
-  }
 }
