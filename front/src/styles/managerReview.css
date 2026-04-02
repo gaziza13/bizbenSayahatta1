@@ -1,4 +1,7 @@
-/* Основной контейнер */
+/* ===============================
+   PAGE LAYOUT
+================================= */
+
 .manager-review {
   width: 100%;
   max-width: 1400px;
@@ -30,7 +33,10 @@
   margin-bottom: 20px;
 }
 
-/* Tabs */
+/* ===============================
+   TABS
+================================= */
+
 .tabs-container {
   display: flex;
   gap: 12px;
@@ -64,7 +70,10 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Content */
+/* ===============================
+   CONTENT WRAPPERS
+================================= */
+
 .tab-content {
   width: 100%;
   display: flex;
@@ -72,7 +81,15 @@
   align-items: flex-start;
 }
 
-/* Application cards */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+  width: 100%;
+}
+
+/* ===============================
+   CARDS
+================================= */
+
 .application-card {
   width: 100%;
   max-width: 800px;
@@ -84,7 +101,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
 }
 
 .application-card p {
@@ -92,69 +109,6 @@
   font-size: 15px;
   text-align: left;
 }
-
-/* Input */
-.reason-input {
-  width: 100%;
-  padding: 10px 14px;
-  margin-top: 10px;
-  border-radius: 12px;
-  border: 1px solid #d0d5dd;
-  background: #f9fafb;
-  font-size: 14px;
-  color: #5a5450;
-  outline: none;
-  box-sizing: border-box;
-}
-
-/* Buttons */
-.actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.actions button {
-  padding: 8px 22px;
-  border-radius: 50px;
-  border: 2px solid #5a5450;
-  background: transparent;
-  color: #5a5450;
-  cursor: pointer;
-  transition: all .3s;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.actions button:hover {
-  background: #5a5450;
-  color: #fff;
-}
-
-/* Messages */
-.manager-loading, .manager-error {
-  text-align: left;
-  margin: 20px 0;
-}
-
-.manager-error { 
-  color: #b42318; 
-}
-
-/* Animation */
-.fade-in {
-  animation: fadeIn 0.3s ease-in;
-  width: 100%;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ===================== */
-/* HISTORY (FIXED NORMAL) */
-/* ===================== */
 
 .history-grid {
   display: grid;
@@ -180,10 +134,9 @@
 
 .history-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
 }
 
-/* Typography inside */
 .history-card p {
   margin: 0;
 }
@@ -198,7 +151,80 @@
   color: #9a948f;
 }
 
-/* Responsive */
+/* ===============================
+   FORM CONTROLS
+================================= */
+
+.reason-input {
+  width: 100%;
+  padding: 10px 14px;
+  margin-top: 10px;
+  border-radius: 12px;
+  border: 1px solid #d0d5dd;
+  background: #f9fafb;
+  font-size: 14px;
+  color: #5a5450;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.actions button {
+  padding: 8px 22px;
+  border-radius: 50px;
+  border: 2px solid #5a5450;
+  background: transparent;
+  color: #5a5450;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.actions button:hover {
+  background: #5a5450;
+  color: #fff;
+}
+
+/* ===============================
+   STATUS MESSAGES
+================================= */
+
+.manager-loading,
+.manager-error {
+  text-align: left;
+  margin: 20px 0;
+}
+
+.manager-error {
+  color: #b42318;
+}
+
+/* ===============================
+   ANIMATION
+================================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===============================
+   RESPONSIVE
+================================= */
+
 @media (max-width: 1024px) {
   .history-grid {
     grid-template-columns: repeat(3, 1fr);

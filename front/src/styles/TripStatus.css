@@ -1,10 +1,17 @@
+/* ===============================
+   PAGE LAYOUT
+================================= */
+
 .trip-page {
   background: #fafaf9;
   min-height: 100vh;
   padding: 40px 60px;
 }
 
-/* HEADER ROW */
+/* ===============================
+   HEADER
+================================= */
+
 .trip-header-row {
   display: flex;
   justify-content: space-between;
@@ -49,7 +56,10 @@
   margin-bottom: 16px;
 }
 
-/* FILTER BUTTONS */
+/* ===============================
+   FILTERS
+================================= */
+
 .trip-filters {
   display: flex;
   gap: 10px;
@@ -70,7 +80,9 @@
   background: #e2e2e2;
 }
 
-/* APPROVED */
+/* ===============================
+   FILTER STATES
+================================= */
 .trip-filters button.approved.active {
   background: #22c55e;
   color: white;
@@ -88,7 +100,10 @@
   color: white;
 }
 
-/* ADD BUTTON */
+/* ===============================
+   PRIMARY ACTION
+================================= */
+
 .add-trip-btn {
   background: #111827;
   color: white;
@@ -104,7 +119,10 @@
   background: #000;
 }
 
-/* GRID */
+/* ===============================
+   GRID
+================================= */
+
 .trip-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -112,7 +130,10 @@
   margin-top: 20px;
 }
 
-/* CARD */
+/* ===============================
+   CARD
+================================= */
+
 .trip-card {
   background: white;
   border-radius: 22px;
@@ -170,7 +191,9 @@
   color: #666;
 }
 
-/* ================= MODAL ================= */
+/* ===============================
+   MODAL
+================================= */
 
 .modal-overlay {
   position: fixed;
@@ -193,7 +216,9 @@
   animation: fadeIn 0.2s ease-in-out;
 }
 
-/* HEADER */
+/* ===============================
+   MODAL HEADER
+================================= */
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -216,7 +241,9 @@
   opacity: 0.6;
 }
 
-/* BODY */
+/* ===============================
+   MODAL BODY
+================================= */
 .modal-body {
   display: flex;
   flex-direction: column;
@@ -244,7 +271,9 @@
   resize: none;
 }
 
-/* DATE ROW */
+/* ===============================
+   MODAL ACTIONS
+================================= */
 .date-row {
   display: flex;
   gap: 12px;
@@ -256,6 +285,10 @@
   gap: 12px;
   margin-top: 10px;
 }
+
+/* ===============================
+   MODAL BUTTONS
+================================= */
 
 .cancel-btn,
 .save-btn {

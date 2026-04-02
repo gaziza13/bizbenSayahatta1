@@ -1,3 +1,7 @@
+/* ===============================
+   FAVORITE BUTTON
+================================= */
+
 .heartBtn {
   position: absolute;
   top: 10px;
@@ -35,9 +39,17 @@
   stroke: #e53935 !important;
 }
 
+/* ===============================
+   PAGE SHELL
+================================= */
+
 .profile-wrapper {
   width: 100%;
 }
+
+/* ===============================
+   COVER
+================================= */
 
 .cover {
   height: 140px;
@@ -80,11 +92,19 @@
   transform: scale(1.1);
 }
 
+/* ===============================
+   PROFILE CONTENT
+================================= */
+
 .profile-content {
   position: relative;
   padding: 40px;
   margin-left: 50px;
 }
+
+/* ===============================
+   AVATAR
+================================= */
 
 .avatar {
   width: 120px;
@@ -105,6 +125,10 @@
   object-fit: cover;
   border-radius: 50%;
 }
+
+/* ===============================
+   INFO BLOCK
+================================= */
 
 .info {
   flex: 1;
@@ -133,6 +157,10 @@
 .style strong {
   margin-left: 6px;
 }
+
+/* ===============================
+   ADVISOR STATE
+================================= */
 
 .advisor-status {
   border-radius: 999px;
@@ -189,6 +217,10 @@
   gap: 4px;
   max-width: 420px;
 }
+
+/* ===============================
+   PRIVACY PANEL
+================================= */
 
 .privacy-panel {
   margin-top: 10px;

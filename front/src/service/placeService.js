@@ -95,7 +95,6 @@ export async function handleToggleMustVisit({
 
   try {
     const data = await toggleMustVisit(placeId, !currentValue);
-    await api.post(`places/places/${placeId}/save/`);
 
     setPlaces((prev) =>
       prev.map((place) =>

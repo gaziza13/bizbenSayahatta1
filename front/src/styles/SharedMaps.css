@@ -1,10 +1,17 @@
+/* ===============================
+   PAGE LAYOUT
+================================= */
+
 .shared-maps-container {
   display: flex;
   gap: 20px;
   padding: 20px;
 }
 
-/* Back button */
+/* ===============================
+   BACK BUTTON
+================================= */
+
 .back-button {
   position: absolute;
   top: 90px;
@@ -22,7 +29,10 @@
   background: #e0e0e0;
 }
 
-/* Users panel */
+/* ===============================
+   USERS PANEL
+================================= */
+
 .users-panel {
   width: 250px;
 }
@@ -52,14 +62,17 @@
   object-fit: cover;
 }
 
-/* Map panel */
+/* ===============================
+   MAP PANEL
+================================= */
+
 .map-panel {
   flex: 1;
-  margin-top: 60px; /* pushes content lower */
+  margin-top: 60px;
 }
 
 .placeholder-text {
-  margin-top: 70px; /* move text lower */
+  margin-top: 70px;
   margin-left: 50px;
   color: #777;
   font-size: 16px;

@@ -2,13 +2,14 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .models import User, UserPreferences
 from marketplace.models import TripAdvisorApplication, TripAdvisorProfile
 from .permissions import IsActiveAndNotBlocked
 from .serializers import (
     CustomTokenObtainPairSerializer,
+    CustomTokenRefreshSerializer,
     PrivacySettingsSerializer,
     RegisterSerializer,
     UserPreferencesSerializer,
@@ -21,6 +22,12 @@ from .services import sync_user_travel_profile
 class CustomTokenObtainPairView(TokenObtainPairView):
     """JWT login that accepts email + password."""
     serializer_class = CustomTokenObtainPairSerializer
+
+
+class CustomTokenRefreshView(TokenRefreshView):
+    """JWT refresh that degrades deleted-user tokens into a clean auth failure."""
+
+    serializer_class = CustomTokenRefreshSerializer
 
 
 class RegisterView(generics.CreateAPIView):

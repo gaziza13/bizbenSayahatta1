@@ -14,25 +14,24 @@ from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
 import os
+from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
-from dj_database_url import UnknownSchemeError
-
 
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+DATABASE_URL = (os.getenv("DATABASE_URL") or "").strip()
+if (DATABASE_URL.startswith("b'") and DATABASE_URL.endswith("'")) or (
+    DATABASE_URL.startswith('b"') and DATABASE_URL.endswith('"')
+):
+    DATABASE_URL = DATABASE_URL[2:-1]
 
 # Stripe (Payment Links + webhooks). Never commit real keys.
 STRIPE_SECRET_KEY = (os.getenv("STRIPE_SECRET_KEY") or "").strip()
 STRIPE_WEBHOOK_SECRET = (os.getenv("STRIPE_WEBHOOK_SECRET") or "").strip()
 # Base Payment Link URL (no query string). client_reference_id is appended per checkout.
 STRIPE_PAYMENT_LINK_URL = (os.getenv("STRIPE_PAYMENT_LINK_URL") or "").strip()
-DATABASE_URL = (os.getenv("DATABASE_URL") or "").strip()
-if (DATABASE_URL.startswith("b'") and DATABASE_URL.endswith("'")) or (
-    DATABASE_URL.startswith('b"') and DATABASE_URL.endswith('"')
-):
-    DATABASE_URL = DATABASE_URL[2:-1]
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -122,33 +121,16 @@ WSGI_APPLICATION = 'bizbenSayahatta.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-if DATABASE_URL:
-    try:
-        DATABASES = {
-            "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)
-        }
-    except UnknownSchemeError:
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": "bizbensayahattadb",
-                "USER": "aisha",
-                "PASSWORD": "1234",
-                "HOST": "127.0.0.1",
-                "PORT": "5432",
-            }
-        }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": "bizbensayahatta_db",
-            "USER": "ssabina",
-            "PASSWORD": "",
-            "HOST": "localhost",
-            "PORT": "5432",
-        }
-    }
+if not DATABASE_URL:
+    raise ImproperlyConfigured("DATABASE_URL must be set. This project is configured to use the external database.")
+
+DATABASES = {
+    "default": dj_database_url.parse(
+        DATABASE_URL,
+        conn_max_age=600,
+        ssl_require=True,
+    )
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

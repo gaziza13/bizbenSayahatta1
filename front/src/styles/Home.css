@@ -1,4 +1,7 @@
-/* Общие стили страницы */
+/* ===============================
+   PAGE LAYOUT
+================================= */
+
 .home-page {
   display: flex;
   justify-content: center;
@@ -15,7 +18,10 @@
   align-items: center;
 }
 
-/* Левый блок */
+/* ===============================
+   HERO CONTENT
+================================= */
+
 .home-left h1 {
   font-size: 60px;
   line-height: 1.1;
@@ -44,13 +50,19 @@
   background: #111827;
 }
 
-/* Центральная иллюстрация */
+/* ===============================
+   HERO ILLUSTRATION
+================================= */
+
 .home-center .globe-img {
   width: 400px;
   height: auto;
 }
 
-/* Правый блок чата */
+/* ===============================
+   HERO CHAT CARD
+================================= */
+
 .home-right .chat-card {
   background: #fff;
   border-radius: 24px;
@@ -69,7 +81,10 @@
   box-shadow: 0 30px 50px -15px rgba(0, 0, 0, 0.12);
 }
 
-/* Заголовок чата */
+/* ===============================
+   CHAT HEADER
+================================= */
+
 .chat-header {
   display: flex;
   align-items: center;
@@ -78,7 +93,10 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
-/* Аватарка */
+/* ===============================
+   CHAT AVATAR
+================================= */
+
 .ai-avatar {
   width: 48px;
   height: 48px;
@@ -93,7 +111,10 @@
   flex-shrink: 0;
 }
 
-/* Блок информации ассистента */
+/* ===============================
+   CHAT META
+================================= */
+
 .chat-header-info {
   flex: 1;
   display: flex;
@@ -123,7 +144,10 @@
   margin-top: 2px;
 }
 
-/* Предпросмотр поездки */
+/* ===============================
+   TRIP PREVIEW PILL
+================================= */
+
 .trip-preview {
   background: linear-gradient(135deg, #667eea, #764ba2);
   padding: 6px 12px;
@@ -134,7 +158,10 @@
   white-space: nowrap;
 }
 
-/* Тело чата */
+/* ===============================
+   CHAT BODY
+================================= */
+
 .chat-body {
   background: #f9fbfd;
   border-radius: 18px;
@@ -180,7 +207,10 @@
   border: 2px solid #edf2f7;
 }
 
-/* Подвал чата */
+/* ===============================
+   CHAT FOOTER
+================================= */
+
 .chat-footer {
   display: flex;
   flex-direction: column;
@@ -248,7 +278,10 @@
   border-color: #2563eb;
 }
 
-/* WRAPPER */
+/* ===============================
+   PAGE WRAPPER
+================================= */
+
 .home-wrapper {
   display: flex;
   flex-direction: column;
@@ -257,7 +290,9 @@
   max-width: 1400px;
 }
 
-/* FEATURES */
+/* ===============================
+   FEATURES SECTION
+================================= */
 .features-section {
   display: flex;
   flex-direction: column;
@@ -571,4 +606,3 @@
   height: 50px;
   object-fit: contain;
 }
-
