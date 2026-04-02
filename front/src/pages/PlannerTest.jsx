@@ -247,7 +247,7 @@ export default function PlannerTest() {
           <textarea
             value={chatMessage}
             onChange={(e) => setChatMessage(e.target.value)}
-            placeholder="Write message..."
+            placeholder="What would you like to know?"
           />
           <button type="submit">➤</button>
         </form>
