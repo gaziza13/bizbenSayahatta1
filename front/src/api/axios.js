@@ -1,5 +1,10 @@
 import axios from "axios";
-import { clearClientUserData } from "../utils/sessionData";
+import {
+  clearClientUserData,
+  clearStoredTokens,
+  getStoredRefreshToken,
+  getValidAccessToken,
+} from "../utils/sessionData";
 
 const RAW_API_BASE =
   import.meta.env?.VITE_API_BASE || "http://127.0.0.1:8000/api/";
@@ -35,7 +40,39 @@ function safeErrorMessage(status) {
   return "Request failed. Please try again.";
 }
 
-api.interceptors.request.use((config) => {
+let refreshRequest = null;
+
+async function refreshAccessToken() {
+  const refresh = getStoredRefreshToken();
+  if (!refresh) {
+    throw new Error("Missing refresh token");
+  }
+
+  if (!refreshRequest) {
+    refreshRequest = api
+      .post("token/refresh/", { refresh })
+      .then((res) => {
+        const newAccess = res.data?.access;
+        if (!newAccess) {
+          throw new Error("Refresh response did not include access token");
+        }
+        localStorage.setItem("access", newAccess);
+        return newAccess;
+      })
+      .catch((error) => {
+        clearClientUserData();
+        clearStoredTokens();
+        throw error;
+      })
+      .finally(() => {
+        refreshRequest = null;
+      });
+  }
+
+  return refreshRequest;
+}
+
+api.interceptors.request.use(async (config) => {
   if (isPublicAuthEndpoint(config.url || "")) {
     if (config.headers?.Authorization) {
       delete config.headers.Authorization;
@@ -43,10 +80,25 @@ api.interceptors.request.use((config) => {
     return config;
   }
 
-  const token = localStorage.getItem("access");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const validAccessToken = getValidAccessToken();
+  if (validAccessToken) {
+    config.headers.Authorization = `Bearer ${validAccessToken}`;
+    return config;
   }
+
+  if (!getStoredRefreshToken()) {
+    clearClientUserData();
+    clearStoredTokens();
+    return config;
+  }
+
+  try {
+    const refreshedAccessToken = await refreshAccessToken();
+    config.headers.Authorization = `Bearer ${refreshedAccessToken}`;
+  } catch (refreshError) {
+    return Promise.reject(refreshError);
+  }
+
   return config;
 });
 
@@ -63,29 +115,20 @@ api.interceptors.response.use(
     ) {
       originalRequest._retry = true;
 
-      const refresh = localStorage.getItem("refresh");
-      if (!refresh) {
+      if (!getStoredRefreshToken()) {
         clearClientUserData();
-        localStorage.removeItem("access");
-        localStorage.removeItem("refresh");
+        clearStoredTokens();
         return Promise.reject(error);
       }
 
       try {
-        const res = await api.post("token/refresh/", { refresh });
-        const newAccess = res.data?.access;
-        if (newAccess) {
-          localStorage.setItem("access", newAccess);
-          originalRequest.headers = {
-            ...(originalRequest.headers || {}),
-            Authorization: `Bearer ${newAccess}`,
-          };
-          return api(originalRequest);
-        }
+        const newAccess = await refreshAccessToken();
+        originalRequest.headers = {
+          ...(originalRequest.headers || {}),
+          Authorization: `Bearer ${newAccess}`,
+        };
+        return api(originalRequest);
       } catch (refreshError) {
-        clearClientUserData();
-        localStorage.removeItem("access");
-        localStorage.removeItem("refresh");
         return Promise.reject(refreshError);
       }
     }

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 
 from .models import User, UserPreferences
 
@@ -16,6 +17,19 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Map email to username for parent's authenticate()
         attrs["username"] = attrs.get("email", "")
         return super().validate(attrs)
+
+
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    """
+    Return a normal auth error when the refresh token belongs to a deleted user
+    instead of surfacing an unhandled 500 from SimpleJWT internals.
+    """
+
+    def validate(self, attrs):
+        try:
+            return super().validate(attrs)
+        except User.DoesNotExist as exc:
+            raise InvalidToken("User for this token no longer exists.") from exc
 
 
 class RegisterSerializer(serializers.ModelSerializer):

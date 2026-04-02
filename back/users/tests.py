@@ -1,4 +1,7 @@
 from django.test import TestCase
+from rest_framework import status
+from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from places.models import Place, UserMapPlace, VisitedPlace
 from users.models import User, UserPreferences
@@ -73,3 +76,22 @@ class TravelerProfileTests(TestCase):
 
         self.assertEqual(prefs.traveler_level, "Voyager")
         self.assertTrue(any(badge["code"] == "asia_explorer" for badge in prefs.badges))
+
+
+class AuthRefreshTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_refresh_for_deleted_user_returns_unauthorized_instead_of_500(self):
+        user = User.objects.create_user(
+            email="refresh-user@example.com",
+            password="testpass123",
+        )
+        refresh = str(RefreshToken.for_user(user))
+        user.delete()
+
+        response = self.client.post("/api/token/refresh/", {"refresh": refresh}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data["success"], False)
+        self.assertEqual(response.data["error"]["code"], "authentication_error")

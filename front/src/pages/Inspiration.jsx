@@ -43,8 +43,8 @@ const Inspiration = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.auth);
-  const isAuthed = Boolean(localStorage.getItem("access"));
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const isAuthed = isAuthenticated;
   const isTripAdvisor = user?.role === "TRIPADVISOR" || user?.role === "ADMIN";
 
   const preferenceFilters = useMemo(() => {
@@ -118,6 +118,19 @@ const Inspiration = () => {
     await loadPublicTrips({ setLoadingTrips, setPublicTrips });
   };
 
+  const handleToggleFavoriteInPlace = async (placeId) => {
+    const place = places.find((item) => item.id === placeId);
+    if (!place) return;
+    await handleToggleMustVisit({
+      placeId,
+      currentValue: place.is_must_visit,
+      isAuthed,
+      navigate,
+      setPlaces,
+      setSelectedPlace,
+    });
+  };
+
   return (
     <div className={s.page}>
       <h1 className={s.title}>Inspiration</h1>
@@ -179,19 +192,9 @@ const Inspiration = () => {
             key={place.id}
             place={place}
             variant="inspiration"
-            classes={{
-              card: s.card,
-              photo: s.photo,
-              photoPlaceholder: s.photoPlaceholder,
-              cardHeader: s.cardHeader,
-              category: s.category,
-              metaRow: s.metaRow,
-              rating: s.rating,
-              priceTag: s.priceTag,
-              name: s.name,
-              location: s.location,
-            }}
+            isFavorited={place.is_must_visit}
             onOpen={() => openPlaceModal(place)}
+            onToggleFavorite={() => handleToggleFavoriteInPlace(place.id)}
           />
         ))}
       </div>

@@ -1,59 +1,71 @@
 import { formatCategory, formatLocation, priceTierLabel } from "../../utils/placeUtils";
+import emptyHeart from "../../assets/emptyHeart.svg";
+import redHeart from "../../assets/redHeart.svg";
+import styles from "../../styles/PlaceCard.module.css";
 
 export default function PlaceCard({
   place,
   variant = "inspiration",
-  classes = {},
   onOpen,
   onToggleFavorite,
+  isFavorited: isFavoritedProp,
 }) {
-  if (variant === "wishlist") {
-    return (
-      <div className={classes.card} onClick={onOpen}>
-        <div className={classes.imageContainer}>
+  const isFavorited = isFavoritedProp !== undefined ? isFavoritedProp : place?.is_must_visit;
+  const isWishlist = variant === "wishlist";
+  const location = isWishlist ? `${place.city || ""}${place.city && place.country ? ", " : ""}${place.country || ""}` : formatLocation(place);
+
+  return (
+    <div
+      className={`${styles.card} ${isWishlist ? styles.cardWishlist : ""}`}
+      onClick={onOpen}
+    >
+      <div className={styles.imageContainer}>
+        {place.photo_url ? (
+          <img className={styles.photo} src={place.photo_url} alt={place.name} loading="lazy" />
+        ) : (
+          <div className={styles.photoPlaceholder} />
+        )}
+
+        <button
+          className={`${styles.heartBtn} ${isFavorited ? styles.heartActive : ""}`}
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggleFavorite?.();
+          }}
+          aria-label={isFavorited ? "Remove from wishlist" : "Add to wishlist"}
+        >
           <img
-            src={place.photo_url}
-            alt={place.name}
-            className={classes.image}
+            src={isFavorited ? redHeart : emptyHeart}
+            alt={isFavorited ? "Red heart" : "Empty heart"}
+            className={styles.heartImg}
+            width="20"
+            height="20"
           />
+        </button>
 
-          <button
-            className={classes.favoriteButton}
-            onClick={(event) => {
-              event.stopPropagation();
-              onToggleFavorite?.();
-            }}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <defs>
-                <linearGradient id={`heartGradient-${place.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ff6b6b" />
-                  <stop offset="100%" stopColor="#ee5a6f" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                fill={`url(#heartGradient-${place.id})`}
-              />
-            </svg>
-          </button>
+        {isWishlist ? (
+          <div className={styles.tags}>
+            <span className={styles.tag}>{formatCategory(place.category)}</span>
+          </div>
+        ) : null}
+      </div>
 
-          <div className={classes.tags}>
-            <span className={`${classes.tag} tag-${place.category}`}>
-              {place.category.replace("_", " ")}
-            </span>
+      <div className={styles.content}>
+        <div className={styles.cardHeader}>
+          {!isWishlist ? <span className={styles.category}>{formatCategory(place.category)}</span> : <span />}
+          <div className={styles.metaRow}>
+            {place.rating ? <span className={styles.rating}>★ {place.rating}</span> : null}
+            <span className={styles.priceTag}>{priceTierLabel(place.price_level)}</span>
           </div>
         </div>
 
-        <div className={classes.content}>
-          <h3 className={classes.name}>{place.name}</h3>
-          <p className={classes.location}>
-            {place.city}, {place.country}
-          </p>
-          {place.rating && <div className={classes.metaRow}>⭐ {place.rating}</div>}
+        <h3 className={styles.name}>{place.name}</h3>
+        <p className={styles.location}>{location}</p>
+
+        {isWishlist ? (
           <button
             type="button"
-            className={classes.detailsLink}
+            className={styles.detailsLink}
             onClick={(event) => {
               event.stopPropagation();
               onOpen?.();
@@ -61,29 +73,8 @@ export default function PlaceCard({
           >
             View Details →
           </button>
-        </div>
+        ) : null}
       </div>
-    );
-  }
-
-  return (
-    <div className={classes.card} onClick={onOpen}>
-      {place.photo_url ? (
-        <img className={classes.photo} src={place.photo_url} alt={place.name} loading="lazy" />
-      ) : (
-        <div className={classes.photoPlaceholder} />
-      )}
-
-      <div className={classes.cardHeader}>
-        <span className={classes.category}>{formatCategory(place.category)}</span>
-        <div className={classes.metaRow}>
-          {place.rating && <span className={classes.rating}>★ {place.rating}</span>}
-          <span className={classes.priceTag}>{priceTierLabel(place.price_level)}</span>
-        </div>
-      </div>
-
-      <h3 className={classes.name}>{place.name}</h3>
-      <p className={classes.location}>{formatLocation(place)}</p>
     </div>
   );
 }

@@ -2,14 +2,15 @@ import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile } from "../slices/authSlice";
+import { getStoredAccessToken } from "../utils/sessionData";
 import logoImg from "../assets/logo.svg";
 import "../styles/Header.css";
 
 export default function Header() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-  const isAuth = Boolean(localStorage.getItem("access"));
+  const { user, token, isAuthenticated } = useSelector((state) => state.auth);
+  const isAuth = Boolean(token || getStoredAccessToken() || isAuthenticated);
 
   useEffect(() => {
     if (isAuth && !user) dispatch(fetchProfile());

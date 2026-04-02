@@ -1,5 +1,5 @@
-import { StrictMode } from "react";
-import { Provider } from "react-redux";
+import { StrictMode, useEffect } from "react";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
@@ -19,11 +19,37 @@ import SharedMaps from "./pages/SharedMaps";
 import ErrorPage from "./pages/ErrorPage";
 import RequireAuth from "./components/RequireAuth.jsx";
 import { store } from "./store.js";
+import { fetchProfile } from "./slices/authSlice.jsx";
+import { getStoredAccessToken } from "./utils/sessionData.js";
+
+// AuthInitializer component to verify token and fetch user on app load
+function AuthInitializer({ children }) {
+  const dispatch = useDispatch();
+  const { isAuthenticated, token, user } = useSelector((state) => state.auth);
+  const storedToken = getStoredAccessToken();
+  const hasSession = Boolean(token || storedToken || isAuthenticated);
+
+  useEffect(() => {
+    if (hasSession && !user) {
+      dispatch(fetchProfile())
+        .unwrap()
+        .catch((err) => {
+          console.error("Failed to fetch profile:", err);
+        });
+    }
+  }, [dispatch, hasSession, user]);
+
+  return children;
+}
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: (
+      <AuthInitializer>
+        <App />
+      </AuthInitializer>
+    ),
     errorElement: <ErrorPage />,
     children: [
       { index: true, element: <HomePage /> },
@@ -38,7 +64,7 @@ const router = createBrowserRouter([
       { path: "shared-maps", element: <SharedMaps /> },
       { path: "wishlist", element: <RequireAuth><Wishlist /></RequireAuth> },
       { path: "manager/advisors", element: <RequireAuth><ManagerAdvisorReview /></RequireAuth> },
-      { path: "error", element: <ErrorPage /> },
+      { path: "error", element: <ErrorPage />,},
       { path: "*", element: <ErrorPage /> },
       { path: "tripstatus", element: <TripStatus />,}
     ],

@@ -259,9 +259,8 @@ export default function HomePage() {
           <div className="testimonial-user">
             <h4>{t.name}</h4>
             <div className="user-info-row">
-              <span>{t.role}</span> • <span>{t.location}</span>
+              <span>{t.role}</span> , <span>{t.location}</span> | <span>{t.trip}</span>
             </div>
-            <p className="trip">{t.trip}</p>
           </div>
         </div>
       ))}

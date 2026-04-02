@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from .models import Place, MustVisitPlace, UserMapPlace, VisitedPlace
+from .models import Place, MustVisitPlace, SavedPlace, UserMapPlace, VisitedPlace
 
 User = get_user_model()
 
@@ -30,7 +30,10 @@ class PlaceSerializer(serializers.ModelSerializer):
         if hasattr(obj, "is_must_visit_for_user"):
             return bool(obj.is_must_visit_for_user)
 
-        return MustVisitPlace.objects.filter(user=request.user, place=obj).exists()
+        return (
+            MustVisitPlace.objects.filter(user=request.user, place=obj).exists()
+            or SavedPlace.objects.filter(user=request.user, place=obj).exists()
+        )
 
     class Meta:
         model = Place
@@ -64,7 +67,10 @@ class PlaceMapSerializer(serializers.ModelSerializer):
         if hasattr(obj, "is_must_visit_for_user"):
             return bool(obj.is_must_visit_for_user)
 
-        return MustVisitPlace.objects.filter(user=request.user, place=obj).exists()
+        return (
+            MustVisitPlace.objects.filter(user=request.user, place=obj).exists()
+            or SavedPlace.objects.filter(user=request.user, place=obj).exists()
+        )
 
     class Meta:
         model = Place

@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import api from "../api/axios";
 import { toggleMustVisit } from "../api/places";
 import PlaceCard from "../components/places/PlaceCard";
-import cardStyles from "../styles/Inspiration.module.css";
 import "../styles/Wishlist.css";
 
 export default function Wishlist() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   const [destinations, setDestinations] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -113,23 +114,13 @@ export default function Wishlist() {
             <PlaceCard
               key={destination.id}
               place={destination}
-              variant="inspiration"
-              classes={{
-                card: cardStyles.card,
-                photo: cardStyles.photo,
-                photoPlaceholder: cardStyles.photoPlaceholder,
-                cardHeader: cardStyles.cardHeader,
-                category: cardStyles.category,
-                metaRow: cardStyles.metaRow,
-                rating: cardStyles.rating,
-                priceTag: cardStyles.priceTag,
-                name: cardStyles.name,
-                location: cardStyles.location,
-              }}
+              variant="wishlist"
+              isFavorited={true}
               onOpen={() => {
                 setSelectedPlace(destination);
                 setIsModalOpen(true);
               }}
+              onToggleFavorite={() => toggleFavorite(destination.id)}
             />
           ))}
       </div>

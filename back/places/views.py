@@ -22,7 +22,7 @@ from places.serializers import (
     PublicMapUserListSerializer,
 )
 from places.services.google_places import get_places
-from places.services.save_place import save_place_for_user
+from places.services.save_place import save_place_for_user, set_place_wishlist_state
 from bizbenSayahatta.api_exceptions import MapPlaceAlreadyExistsError
 from users.permissions import IsActiveAndNotBlocked
 
@@ -90,13 +90,20 @@ class InspirationListAPIView(ListAPIView):
         if is_must_visit is not None:
             wants_must_visit = str(is_must_visit).lower() in {"1", "true", "yes"}
             if self.request.user.is_authenticated:
-                must_visit_place_ids = MustVisitPlace.objects.filter(
-                    user=self.request.user
-                ).values_list("place_id", flat=True)
+                favorite_place_ids = set(
+                    MustVisitPlace.objects.filter(
+                        user=self.request.user
+                    ).values_list("place_id", flat=True)
+                )
+                favorite_place_ids.update(
+                    SavedPlace.objects.filter(
+                        user=self.request.user
+                    ).values_list("place_id", flat=True)
+                )
                 if wants_must_visit:
-                    queryset = queryset.filter(id__in=must_visit_place_ids)
+                    queryset = queryset.filter(id__in=favorite_place_ids)
                 else:
-                    queryset = queryset.exclude(id__in=must_visit_place_ids)
+                    queryset = queryset.exclude(id__in=favorite_place_ids)
             elif wants_must_visit:
                 queryset = queryset.none()
 
@@ -174,13 +181,14 @@ class SavePlaceAPIView(APIView):
     permission_classes = [IsAuthenticated, IsActiveAndNotBlocked]
 
     def post(self, request, place_id):
-        save_place_for_user(
+        result = set_place_wishlist_state(
             user=request.user,
             place_id=place_id,
+            is_favorited=True,
         )
         return Response(
-            {"detail": "Place saved"},
-            status=status.HTTP_201_CREATED
+            result,
+            status=status.HTTP_200_OK,
         )
 
 
@@ -189,13 +197,29 @@ class WishlistAPIView(APIView):
 
     def get(self, request):
         category = request.query_params.get("category")
-        places = (
-            Place.objects.filter(saved_by__user=request.user)
-            .order_by("-saved_by__created_at")
-            .distinct()
+        must_visit_entries = list(
+            MustVisitPlace.objects.filter(user=request.user)
+            .select_related("place")
+            .order_by("-created_at")
         )
+        saved_entries = list(
+            SavedPlace.objects.filter(user=request.user)
+            .select_related("place")
+            .order_by("-created_at")
+        )
+
+        ordered_places = []
+        seen_place_ids = set()
+        for entry in must_visit_entries + saved_entries:
+            place = entry.place
+            if place.id in seen_place_ids:
+                continue
+            seen_place_ids.add(place.id)
+            ordered_places.append(place)
+
+        places = ordered_places
         if category and category.lower() != "all":
-            places = places.filter(category__iexact=category)
+            places = [place for place in places if place.category.lower() == category.lower()]
         serializer = PlaceMapSerializer(places, many=True, context={"request": request})
         return Response(
             serializer.data,
@@ -279,16 +303,12 @@ class PlaceMustVisitAPIView(APIView):
                 user=request.user,
                 place=place,
             ).exists()
-
-        if next_value:
-            MustVisitPlace.objects.get_or_create(user=request.user, place=place)
-        else:
-            MustVisitPlace.objects.filter(user=request.user, place=place).delete()
-
-        return Response(
-            {"id": place.id, "is_must_visit": next_value},
-            status=status.HTTP_200_OK,
+        result = set_place_wishlist_state(
+            user=request.user,
+            place_id=place.id,
+            is_favorited=next_value,
         )
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class UserMapPlaceListCreateAPIView(APIView):

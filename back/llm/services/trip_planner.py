@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Iterable, List, Optional
 import math
 
-from places.models import Place, InterestMapping
+from places.models import InterestMapping, MustVisitPlace, Place, SavedPlace
 from users.models import UserPreferences
 
 
@@ -85,7 +85,7 @@ def _place_matches_interest(place: Place, interests: List[str]) -> bool:
     return False
 
 
-def _score_place(place: Place, interests: List[str]) -> float:
+def _score_place(place: Place, interests: List[str], favorite_place_ids: Optional[set] = None) -> float:
     score = 0.0
     if place.rating:
         score += place.rating * 2
@@ -93,7 +93,7 @@ def _score_place(place: Place, interests: List[str]) -> float:
         score += min(place.user_ratings_total, 5000) / 1000
     if _place_matches_interest(place, interests):
         score += 1.5
-    if place.is_must_visit:
+    if favorite_place_ids and place.id in favorite_place_ids:
         score += 2.5
     return score
 
@@ -388,6 +388,12 @@ def build_trip_plan(
 
     base_queryset = Place.objects.filter(city__iexact=city)
     places = list(base_queryset)
+    favorite_place_ids = set(
+        MustVisitPlace.objects.filter(user=user).values_list("place_id", flat=True)
+    )
+    favorite_place_ids.update(
+        SavedPlace.objects.filter(user=user).values_list("place_id", flat=True)
+    )
 
     if not places:
         raise ValueError("no_places_for_city")
@@ -414,10 +420,11 @@ def build_trip_plan(
     scored_places = [
         ScoredPlace(
             place=place,
-            score=(
-                _score_place(place, normalized_interests)
-                + (_family_score_bonus(place, kids_age_band) if has_kids else 0.0)
-            ),
+            score=_score_place(
+                place,
+                normalized_interests,
+                favorite_place_ids,
+            ) + (_family_score_bonus(place, kids_age_band) if has_kids else 0.0),
         )
         for place in places
     ]
@@ -459,7 +466,7 @@ def build_trip_plan(
                     "photo_url": place.photo_url,
                     "website": place.website,
                     "neighborhood": place.neighborhood,
-                    "is_must_visit": place.is_must_visit,
+                    "is_must_visit": place.id in favorite_place_ids,
                 }
             )
 
