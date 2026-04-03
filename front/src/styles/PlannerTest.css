@@ -310,3 +310,58 @@ html, body, #root {
   transform: scale(1.2);
   background: rgba(156, 195, 201, 0.1);
 }
+
+.thread-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.thread-actions {
+  display: flex;
+  gap: 6px;
+
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(8px);
+
+  transition: 0.2s;
+}
+
+.thread-row:hover .thread-actions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.thread-action-btn {
+  all: unset;
+  cursor: pointer;
+  color: #777;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+
+  transition: 0.2s;
+}
+
+.thread-action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.thread-action-btn:hover {
+  background: #f1f3f5;
+  color: #000;
+  transform: scale(1.1);
+}
+
+.thread-action-btn--danger:hover {
+  background: rgba(255, 0, 0, 0.1);
+  color: #e03131;
+}
