@@ -545,16 +545,6 @@ export default function PlannerTest() {
             <p className="right-panel-label">Trip tools</p>
             <h2>{selectedThread ? "This chat's plan" : "Trip preview"}</h2>
           </div>
-          {selectedThread ? (
-            <button
-              type="button"
-              className="map-toggle-btn"
-              onClick={() => setMapOpen((previous) => !previous)}
-            >
-              <MapIcon />
-              <span>{mapOpen ? "Hide Map" : "Show Map"}</span>
-            </button>
-          ) : null}
         </div>
 
         {mapOpen && selectedThread ? (
@@ -570,6 +560,18 @@ export default function PlannerTest() {
         ) : null}
 
         <div className={`final-box ${mapOpen ? "final-box--split" : ""}`}>
+
+        {selectedThread ? (
+            <button
+              type="button"
+              className="map-toggle-btn"
+              onClick={() => setMapOpen((previous) => !previous)}
+            >
+              <MapIcon />
+              <span>{mapOpen ? "Hide Map" : "Show Map"}</span>
+            </button>
+          ) : null}
+
           {!selectedThread ? (
             <div className="trip-empty-card">
               Open a chat to view its trip summary and route.

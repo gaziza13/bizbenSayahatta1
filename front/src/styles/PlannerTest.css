@@ -253,3 +253,30 @@ html, body, #root {
   color: #9cc3c9;
   transform: scale(1.2);
 }
+
+.final-box {
+  position: relative; 
+}
+
+.map-toggle-btn {
+  position: absolute;
+  left: 190px; 
+  top: 5px;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 8px 10px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: 0.2s;
+}
+
+.map-toggle-btn:hover {
+  transform: translateX(-3px);
+}
