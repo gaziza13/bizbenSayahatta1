@@ -1,6 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../api/axios";
-import { clearClientUserData, resetClientUserDataOnSessionChange } from "../utils/sessionData";
+import {
+  clearClientUserData,
+  clearStoredTokens,
+  getStoredAccessToken,
+  resetClientUserDataOnSessionChange,
+} from "../utils/sessionData";
 
 /* SIGNUP */
 export const signUpUser = createAsyncThunk(
@@ -10,7 +15,8 @@ export const signUpUser = createAsyncThunk(
       const res = await api.post("users/signup/", data);
       return res.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || "Signup failed");
+      const data = err.response?.data;
+      return rejectWithValue(data && typeof data === "object" ? data : data || "Signup failed");
     }
   }
 );
@@ -18,18 +24,23 @@ export const signUpUser = createAsyncThunk(
 /* LOGIN */
 export const loginUser = createAsyncThunk(
   "auth/login",
-  async (data, { rejectWithValue }) => {
+  async (data, { dispatch, rejectWithValue }) => {
     try {
       const res = await api.post("token/", data);
       resetClientUserDataOnSessionChange(res.data.access);
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
+      await dispatch(fetchProfile()).unwrap();
       return res.data;
     } catch (err) {
       clearClientUserData();
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
-      return rejectWithValue(err.response?.data?.detail || "Invalid credentials");
+      clearStoredTokens();
+      const contentType = err?.response?.headers?.["content-type"] || "";
+      const detail =
+        err?.response?.data?.detail ||
+        err?.userMessage ||
+        (contentType.includes("application/json") ? "Invalid credentials" : "Login failed");
+      return rejectWithValue(detail);
     }
   }
 );
@@ -40,9 +51,12 @@ export const fetchProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await api.get("users/profile/");
-      return res.data; // this will now be JSON
+      return res.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || "Cannot fetch profile");
+      return rejectWithValue({
+        status: err.response?.status,
+        data: err.response?.data || "Cannot fetch profile",
+      });
     }
   }
 );
@@ -75,22 +89,36 @@ export const uploadUserPhoto = createAsyncThunk(
   }
 );
 
+/* INITIAL STATE - Rehydrate from localStorage */
+const storedToken = getStoredAccessToken();
+const initialState = {
+  user: null,
+  token: storedToken || null,
+  isAuthenticated: !!storedToken,
+  loading: false,
+  error: null,
+};
+
 /* SLICE */
 const authSlice = createSlice({
   name: "auth",
-  initialState: {
-    user: null,
-    loading: false,
-    error: null,
-  },
+  initialState,
   reducers: {
     logoutUser: (state) => {
       state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
       state.error = null;
       state.loading = false;
       clearClientUserData();
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
+      clearStoredTokens();
+    },
+    setUser: (state, action) => {
+      state.user = action.payload;
+      state.isAuthenticated = true;
+    },
+    clearAuthError: (state) => {
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -111,13 +139,17 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginUser.fulfilled, (state) => {
+      .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.error = null;
+        state.token = action.payload.access;
+        state.isAuthenticated = true;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.token = null;
+        state.isAuthenticated = false;
       })
       .addCase(fetchProfile.pending, (state) => {
         state.loading = true;
@@ -126,14 +158,19 @@ const authSlice = createSlice({
       .addCase(fetchProfile.fulfilled, (state, action) => {
         state.user = action.payload;
         state.loading = false;
+        state.isAuthenticated = true;
       })
       .addCase(fetchProfile.rejected, (state, action) => {
-        state.user = null;
         state.loading = false;
-        state.error = action.payload;
-        clearClientUserData();
-        localStorage.removeItem("access");
-        localStorage.removeItem("refresh");
+        state.error = action.payload?.data || action.payload || "Cannot fetch profile";
+
+        const status = action.payload?.status ?? action.error?.status;
+        if (status === 401 || status === 403) {
+          state.user = null;
+          state.token = null;
+          state.isAuthenticated = false;
+          clearClientUserData();
+        }
       })
       .addCase(updatePreferences.fulfilled, (state, action) => {
         if (state.user) {
@@ -146,5 +183,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logoutUser } = authSlice.actions;
+export const { logoutUser, setUser, clearAuthError } = authSlice.actions;
 export default authSlice.reducer;

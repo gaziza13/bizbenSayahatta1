@@ -1,10 +1,15 @@
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, filters
+from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.filters import OrderingFilter
+from rest_framework.exceptions import NotFound
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from django.contrib.auth import get_user_model
+from users.models import UserPreferences
 
 from places.models import Place, VisitedPlace, SavedPlace, MustVisitPlace, UserMapPlace
 from places.serializers import (
@@ -12,9 +17,14 @@ from places.serializers import (
     PlaceMapSerializer,
     UserMapPlaceSerializer,
     VisitedPlaceSerializer,
+    PublicUserMapPlaceSerializer,
+    PublicVisitedPlaceSerializer,
+    PublicMapUserListSerializer,
 )
 from places.services.google_places import get_places
-from places.services.save_place import save_place_for_user
+from places.services.save_place import save_place_for_user, set_place_wishlist_state
+from bizbenSayahatta.api_exceptions import MapPlaceAlreadyExistsError
+from users.permissions import IsActiveAndNotBlocked
 
 BADGE_LEVELS = [
     {"code": "starter", "label": "Starter", "threshold": 1},
@@ -64,9 +74,10 @@ def _price_level_to_number(price_level):
 class InspirationListAPIView(ListAPIView):
     queryset = Place.objects.all()
     serializer_class = PlaceSerializer
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
     filterset_fields = ["category", "status"]
     ordering_fields = ["rating", "saves_count"]
+    search_fields = ["name", "city", "country", "category", "address", "neighborhood"]
     ordering = ["-rating"]
 
     def filter_queryset(self, queryset):
@@ -79,13 +90,20 @@ class InspirationListAPIView(ListAPIView):
         if is_must_visit is not None:
             wants_must_visit = str(is_must_visit).lower() in {"1", "true", "yes"}
             if self.request.user.is_authenticated:
-                must_visit_place_ids = MustVisitPlace.objects.filter(
-                    user=self.request.user
-                ).values_list("place_id", flat=True)
+                favorite_place_ids = set(
+                    MustVisitPlace.objects.filter(
+                        user=self.request.user
+                    ).values_list("place_id", flat=True)
+                )
+                favorite_place_ids.update(
+                    SavedPlace.objects.filter(
+                        user=self.request.user
+                    ).values_list("place_id", flat=True)
+                )
                 if wants_must_visit:
-                    queryset = queryset.filter(id__in=must_visit_place_ids)
+                    queryset = queryset.filter(id__in=favorite_place_ids)
                 else:
-                    queryset = queryset.exclude(id__in=must_visit_place_ids)
+                    queryset = queryset.exclude(id__in=favorite_place_ids)
             elif wants_must_visit:
                 queryset = queryset.none()
 
@@ -160,31 +178,48 @@ class PlacesListAPIView(APIView):
 
 
 class SavePlaceAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsActiveAndNotBlocked]
 
     def post(self, request, place_id):
-        save_place_for_user(
+        result = set_place_wishlist_state(
             user=request.user,
             place_id=place_id,
+            is_favorited=True,
         )
         return Response(
-            {"detail": "Place saved"},
-            status=status.HTTP_201_CREATED
+            result,
+            status=status.HTTP_200_OK,
         )
 
 
 class WishlistAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsActiveAndNotBlocked]
 
     def get(self, request):
         category = request.query_params.get("category")
-        places = (
-            Place.objects.filter(saved_by__user=request.user)
-            .order_by("-saved_by__created_at")
-            .distinct()
+        must_visit_entries = list(
+            MustVisitPlace.objects.filter(user=request.user)
+            .select_related("place")
+            .order_by("-created_at")
         )
+        saved_entries = list(
+            SavedPlace.objects.filter(user=request.user)
+            .select_related("place")
+            .order_by("-created_at")
+        )
+
+        ordered_places = []
+        seen_place_ids = set()
+        for entry in must_visit_entries + saved_entries:
+            place = entry.place
+            if place.id in seen_place_ids:
+                continue
+            seen_place_ids.add(place.id)
+            ordered_places.append(place)
+
+        places = ordered_places
         if category and category.lower() != "all":
-            places = places.filter(category__iexact=category)
+            places = [place for place in places if place.category.lower() == category.lower()]
         serializer = PlaceMapSerializer(places, many=True, context={"request": request})
         return Response(
             serializer.data,
@@ -193,10 +228,10 @@ class WishlistAPIView(APIView):
 
 
 class VisitPlaceAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsActiveAndNotBlocked]
 
     def post(self, request, place_id):
-        place = Place.objects.get(id=place_id)
+        place = get_object_or_404(Place, id=place_id)
         VisitedPlace.objects.get_or_create(user=request.user, place=place)
         visited_count = VisitedPlace.objects.filter(user=request.user).count()
         badges = _get_badges(visited_count)
@@ -211,7 +246,7 @@ class VisitPlaceAPIView(APIView):
 
 
 class UnvisitPlaceAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsActiveAndNotBlocked]
 
     def delete(self, request, place_id):
         visited = VisitedPlace.objects.filter(user=request.user, place_id=place_id).first()
@@ -231,7 +266,7 @@ class UnvisitPlaceAPIView(APIView):
 
 
 class VisitedPlacesAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsActiveAndNotBlocked]
 
     def get(self, request):
         from django.db.models import F
@@ -256,10 +291,10 @@ class VisitedPlacesAPIView(APIView):
 
 
 class PlaceMustVisitAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsActiveAndNotBlocked]
 
     def post(self, request, place_id):
-        place = Place.objects.get(id=place_id)
+        place = get_object_or_404(Place, id=place_id)
 
         if "is_must_visit" in request.data:
             next_value = bool(request.data.get("is_must_visit"))
@@ -268,20 +303,16 @@ class PlaceMustVisitAPIView(APIView):
                 user=request.user,
                 place=place,
             ).exists()
-
-        if next_value:
-            MustVisitPlace.objects.get_or_create(user=request.user, place=place)
-        else:
-            MustVisitPlace.objects.filter(user=request.user, place=place).delete()
-
-        return Response(
-            {"id": place.id, "is_must_visit": next_value},
-            status=status.HTTP_200_OK,
+        result = set_place_wishlist_state(
+            user=request.user,
+            place_id=place.id,
+            is_favorited=next_value,
         )
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class UserMapPlaceListCreateAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsActiveAndNotBlocked]
 
     def get(self, request):
         places = UserMapPlace.objects.filter(user=request.user)
@@ -290,19 +321,122 @@ class UserMapPlaceListCreateAPIView(APIView):
 
     def post(self, request):
         serializer = UserMapPlaceSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+
+        duplicate_exists = UserMapPlace.objects.filter(
+            user=request.user,
+            city__iexact=serializer.validated_data["city"],
+            country__iexact=serializer.validated_data["country"],
+            date=serializer.validated_data["date"],
+            lat=serializer.validated_data["lat"],
+            lon=serializer.validated_data["lon"],
+        ).exists()
+        if duplicate_exists:
+            raise MapPlaceAlreadyExistsError()
 
         place = serializer.save(user=request.user)
         return Response(UserMapPlaceSerializer(place).data, status=status.HTTP_201_CREATED)
 
 
 class UserMapPlaceDeleteAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsActiveAndNotBlocked]
 
     def delete(self, request, place_id):
         place = UserMapPlace.objects.filter(id=place_id, user=request.user).first()
         if not place:
-            return Response({"detail": "Map place not found"}, status=status.HTTP_404_NOT_FOUND)
+            raise NotFound("Map place not found.")
         place.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserPublicMapAPIView(APIView):
+    """
+    GET /api/places/users/<user_id>/map/
+    Returns map places, visited places, and badges for the given user.
+    - If requester is the owner: full data (including dates).
+    - If requester is another user (or anonymous): only data allowed by target's privacy
+      (share_map, share_visited_places, share_badges). No dates or time-related fields.
+    If nothing is shared, returns 403.
+    """
+
+    permission_classes = []  # public endpoint; visibility enforced inside
+
+    def get(self, request, user_id):
+        User = get_user_model()
+        target = User.objects.filter(id=user_id).first()
+        if not target:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        is_owner = request.user.is_authenticated and request.user.id == target.id
+
+        if is_owner:
+            map_places = UserMapPlace.objects.filter(user=target)
+            visited = VisitedPlace.objects.filter(user=target).select_related("place").order_by("-created_at")
+            visited_count = visited.count()
+            badges = _get_badges(visited_count)
+            return Response(
+                {
+                    "user": {"id": target.id, "username": target.username or target.email},
+                    "map_places": UserMapPlaceSerializer(map_places, many=True).data,
+                    "visited_places": VisitedPlaceSerializer(visited, many=True, context={"request": request}).data,
+                    "badges": badges,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        prefs = UserPreferences.objects.filter(user=target).first()
+        if not prefs:
+            return Response(
+                {"detail": "This user has not shared their travel map."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if not (prefs.share_map or prefs.share_visited_places or prefs.share_badges):
+            return Response(
+                {"detail": "This user has not shared their travel map."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        payload = {
+            "user": {"id": target.id, "username": target.username or target.email},
+        }
+        if prefs.share_map:
+            map_places = UserMapPlace.objects.filter(user=target)
+            payload["map_places"] = PublicUserMapPlaceSerializer(map_places, many=True).data
+        else:
+            payload["map_places"] = []
+        if prefs.share_visited_places:
+            visited = VisitedPlace.objects.filter(user=target).select_related("place")
+            payload["visited_places"] = PublicVisitedPlaceSerializer(visited, many=True).data
+        else:
+            payload["visited_places"] = []
+        if prefs.share_badges:
+            visited_count = VisitedPlace.objects.filter(user=target).count()
+            payload["badges"] = _get_badges(visited_count)
+        else:
+            payload["badges"] = []
+
+        return Response(payload, status=status.HTTP_200_OK)
+
+
+class UsersWithPublicMapListAPIView(ListAPIView):
+    """
+    GET /api/places/users/shared-maps/
+    Returns list of users who have enabled public map visibility (share_map=True).
+    Each item: id, username, avatar. When a user turns off share_map, they disappear from this list.
+    Public endpoint (no auth required).
+    """
+
+    permission_classes = []
+    serializer_class = PublicMapUserListSerializer
+
+    def get_queryset(self):
+        User = get_user_model()
+        return (
+            User.objects.filter(
+                preferences__share_map=True,
+                is_active=True,
+                deleted_at__isnull=True,
+            )
+            .order_by("username", "id")
+            .distinct()
+        )

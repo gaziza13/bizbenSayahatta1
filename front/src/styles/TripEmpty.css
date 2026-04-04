@@ -1,4 +1,7 @@
-/* TripEmpty.css */
+/* ===============================
+   THEME TOKENS
+================================= */
+
 :root {
   --bg: #fafaf9;
   --ink: #2a2622;
@@ -8,6 +11,10 @@
   --pill-border: #e4ded7;
   --shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 }
+
+/* ===============================
+   PAGE HEADER
+================================= */
 
 .trip-page {
   min-height: 100vh;
@@ -31,6 +38,10 @@
   color: var(--muted);
   font-size: 14px;
 }
+
+/* ===============================
+   TABS
+================================= */
 
 .trip-tabs {
   display: flex;
@@ -65,6 +76,10 @@
   font-size: 11px;
 }
 
+/* ===============================
+   EMPTY STATE
+================================= */
+
 .trip-empty {
   margin-top: 16px;
   display: grid;
@@ -79,6 +94,21 @@
   line-height: 1.05;
   font-weight: 500;
 }
+
+.trip-empty__right {
+  display: flex;
+  justify-content: center;
+}
+
+.trip-illustration {
+  width: 440px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* ===============================
+   CTA
+================================= */
 
 .trip-cta {
   background: var(--accent);
@@ -106,16 +136,9 @@
   font-size: 15px;
 }
 
-.trip-empty__right {
-  display: flex;
-  justify-content: center;
-}
-
-.trip-illustration {
-  width: 440px;
-  height: auto;
-  object-fit: contain;
-}
+/* ===============================
+   RESPONSIVE
+================================= */
 
 @media (max-width: 900px) {
   .trip-page {

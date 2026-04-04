@@ -1,4 +1,7 @@
-/* Общие стили страницы */
+/* ===============================
+   PAGE LAYOUT
+================================= */
+
 .home-page {
   display: flex;
   justify-content: center;
@@ -15,7 +18,10 @@
   align-items: center;
 }
 
-/* Левый блок */
+/* ===============================
+   HERO CONTENT
+================================= */
+
 .home-left h1 {
   font-size: 60px;
   line-height: 1.1;
@@ -44,13 +50,19 @@
   background: #111827;
 }
 
-/* Центральная иллюстрация */
+/* ===============================
+   HERO ILLUSTRATION
+================================= */
+
 .home-center .globe-img {
   width: 400px;
   height: auto;
 }
 
-/* Правый блок чата */
+/* ===============================
+   HERO CHAT CARD
+================================= */
+
 .home-right .chat-card {
   background: #fff;
   border-radius: 24px;
@@ -69,7 +81,10 @@
   box-shadow: 0 30px 50px -15px rgba(0, 0, 0, 0.12);
 }
 
-/* Заголовок чата */
+/* ===============================
+   CHAT HEADER
+================================= */
+
 .chat-header {
   display: flex;
   align-items: center;
@@ -78,7 +93,10 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
-/* Аватарка */
+/* ===============================
+   CHAT AVATAR
+================================= */
+
 .ai-avatar {
   width: 48px;
   height: 48px;
@@ -93,7 +111,10 @@
   flex-shrink: 0;
 }
 
-/* Блок информации ассистента */
+/* ===============================
+   CHAT META
+================================= */
+
 .chat-header-info {
   flex: 1;
   display: flex;
@@ -123,7 +144,10 @@
   margin-top: 2px;
 }
 
-/* Предпросмотр поездки */
+/* ===============================
+   TRIP PREVIEW PILL
+================================= */
+
 .trip-preview {
   background: linear-gradient(135deg, #667eea, #764ba2);
   padding: 6px 12px;
@@ -134,7 +158,10 @@
   white-space: nowrap;
 }
 
-/* Тело чата */
+/* ===============================
+   CHAT BODY
+================================= */
+
 .chat-body {
   background: #f9fbfd;
   border-radius: 18px;
@@ -180,7 +207,10 @@
   border: 2px solid #edf2f7;
 }
 
-/* Подвал чата */
+/* ===============================
+   CHAT FOOTER
+================================= */
+
 .chat-footer {
   display: flex;
   flex-direction: column;
@@ -247,3 +277,640 @@
   background: #2563eb;
   border-color: #2563eb;
 }
+
+/* ===============================
+   PAGE WRAPPER
+================================= */
+
+.home-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 120px;
+  width: 100%;
+  max-width: 1400px;
+}
+
+/* ===============================
+   FEATURES SECTION
+================================= */
+.features-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.features-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #6366f1;
+  font-weight: 600;
+}
+
+.features-section h2 {
+  font-size: 42px;
+  margin: 0;
+}
+
+.features-sub {
+  color: #6b7280;
+  max-width: 500px;
+}
+
+/* GRID */
+.features-grid {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 160px;
+  gap: 20px;
+}
+
+/* CARD */
+.feature-card {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid #f1f1f1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* BIG CARD */
+.feature-card.big {
+  grid-column: span 2;
+  background: #D5DE60;
+  color: black;
+}
+
+.feature-card.big button {
+  margin-top: auto;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* WIDE CARD */
+.feature-card.wide {
+  grid-column: span 2;
+}
+
+/* ICON */
+.feature-card span {
+  font-size: 22px;
+}
+
+/* TEXT */
+.feature-card h3 {
+  font-size: 24px;
+  margin: 0;
+}
+
+.feature-card h4 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.feature-card p {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.feature-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+/* для большой карточки можно чуть больше */
+.feature-card.big .feature-icon {
+  width: 40px;
+  height: 40px;
+}
+.feature-icon-iskorki {
+  width: 23px;
+  height: 32px;
+  object-fit: contain;
+}
+
+/* AI Planner */
+.feature-card.big {
+  grid-column: 1 / 3;
+  grid-row: 1 / 3;
+}
+
+/* Interactive Map */
+.map-card {
+  grid-column: 3 / 5;
+  grid-row: 1 / 2;
+}
+
+/* Wishlist */
+.feature-card:nth-child(3) {
+  grid-column: 3 / 4;
+  grid-row: 2 / 3;
+}
+
+/* Safety */
+.feature-card:nth-child(4) {
+  grid-column: 4 / 5;
+  grid-row: 2 / 3;
+}
+
+/* Events (ПОД AI) */
+.feature-card.wide {
+  grid-column: 1 / 3;
+  grid-row: 3 / 4;
+}
+
+/* Community (СПРАВА, МАЛЕНЬКИЙ) */
+.feature-card:nth-child(5) {
+  grid-column: 3 / 4;
+  grid-row: 3 / 4;
+}
+
+/* HOW SECTION */
+.how-section {
+  margin-top: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.how-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #6366f1;
+  font-weight: 600;
+  text-align: center;
+}
+
+.how-section h2 {
+  font-size: 42px;
+  max-width: 600px;
+  text-align: center;
+  margin: 0 auto;
+  margin-bottom: 120px;
+}
+
+/* CONTENT */
+.how-content {
+  display: flex;
+  gap: 60px;
+  align-items: flex-start;
+}
+
+/* LEFT STEPS */
+.how-steps {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* STEP CARD */
+.step-card {
+  display: flex;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.step-card.active {
+  border-color: #7dd3fc;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.step-icon {
+  width: 48px;
+  height: 48px;
+  background: #e0f2fe;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.step-number {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.step-card h3 {
+  margin: 4px 0;
+}
+
+.step-card p {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* RIGHT PREVIEW */
+.how-preview {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.how-chat {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+/* ===== HOW RIGHT SIDE IMPROVEMENTS ===== */
+
+/* Увеличиваем ширину правого блока */
+.wide-preview {
+  flex: 1.2;
+}
+
+/* Структура сообщений */
+.chat-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.chat-row.user {
+  justify-content: flex-end;
+}
+
+/* AI бейдж (кружок) */
+.avatar-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #75B7C1;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* AI bubble */
+.ai-bubble {
+  background: #f1f5f9;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  max-width: 75%;
+}
+
+/* User bubble */
+.user-bubble {
+  background: #000;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  max-width: 75%;
+}
+
+/* Tags */
+.tags {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tags span {
+  background: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.step-icon img{
+  width: 70px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.inspiration-section {
+  margin-top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.inspiration-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.inspiration-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #6366f1;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.inspiration-head h2 {
+  margin: 0;
+  font-size: 48px;
+}
+
+.inspiration-sub {
+  margin: 10px 0 0;
+  color: #6b7280;
+}
+
+.inspiration-carousel {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.inspiration-nav {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.inspiration-nav button,
+.inspiration-edge-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.inspiration-nav button:hover,
+.inspiration-edge-btn:hover {
+  background: #111827;
+  color: #fff;
+  border-color: #111827;
+}
+
+.inspiration-track {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+  scroll-behavior: auto;
+}
+
+.inspiration-track::-webkit-scrollbar {
+  height: 8px;
+}
+
+.inspiration-track::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
+.inspiration-card {
+  flex: 0 0 calc((100% - 40px) / 3);
+  border-radius: 24px;
+  background: #fff;
+  border: 1px solid #ececec;
+  overflow: hidden;
+}
+
+.inspiration-card img {
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+}
+
+.inspiration-card-body {
+  padding: 18px 18px 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.inspiration-card h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.inspiration-country {
+  margin: 6px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.inspiration-country img {
+  width: 13px;
+  height: 13px;
+  object-fit: contain;
+}
+
+.inspiration-categories {
+  padding: 0 18px 14px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inspiration-categories span {
+  background: #f3f4f6;
+  color: #4b5563;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+
+.inspiration-trips {
+  text-align: right;
+}
+
+.inspiration-trips span {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.inspiration-trips strong {
+  display: block;
+  font-size: 18px;
+}
+
+.inspiration-card-btn {
+  margin: 0 18px 18px;
+  width: calc(100% - 36px);
+  border: 1px solid #ffffff;
+  border-radius: 999px;
+  background: #fff;
+  padding: 12px 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.inspiration-card-btn span {
+  float: right;
+}
+
+.view-all-destinations-btn {
+  align-self: center;
+  margin-top: 4px;
+  padding: 12px 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  background: #fff;
+  color: #111827;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.view-all-destinations-btn span {
+  margin-left: 8px;
+}
+
+/* ===== TESTIMONIALS FINAL FIX ===== */
+
+.testimonials-section {
+  margin-top: 100px;
+  padding: 0 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.testimonials-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.testimonials-track {
+  display: flex;
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  align-items: stretch; /* важно */
+}
+
+.testimonial-card {
+  min-width: 100%;
+  background: rgba(117, 183, 193, 0.7);
+  backdrop-filter: blur(10px);
+  color: #1e293b;
+
+  padding: 60px 100px;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  height: auto;
+  justify-content: flex-start; /* ключевой фикс */
+}
+
+.testimonial-header-label {
+  font-size: 34px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #ffffff;
+  margin-bottom: 30px;
+}
+
+.testimonial-text {
+  font-size:28px;
+  line-height: 1.6;
+  font-weight: 500;
+  color: #e3edf0;
+  margin-bottom: 40px;
+  max-width: 900px;
+
+  white-space: normal;
+  word-break: break-word;
+
+  height: auto;
+  overflow: visible;
+}
+
+.testimonial-user h4 {
+  font-size: 20px;
+  margin: 0 0 5px 0;
+  color: #ffffff;
+}
+
+.user-info-row {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 15px;
+}
+
+.trip {
+  display: inline-block;
+  background: #75B7C1;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* КНОПКИ */
+.testimonial-btn {
+  background: #1e293b;
+  color: #fff;
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.2s ease;
+  position: absolute;
+  z-index: 10;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.testimonial-btn:first-child { left: -24px; }
+.testimonial-btn:last-child { right: -24px; }
+
+.testimonial-btn:hover {
+  background: #000;
+  transform: scale(1.1);
+}
+

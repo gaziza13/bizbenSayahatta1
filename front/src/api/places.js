@@ -1,6 +1,12 @@
 import api from "./axios";
 
+<<<<<<< HEAD
 const API_BASE = import.meta.env.VITE_API_BASE;
+=======
+const API_BASE_RAW = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000/api";
+const API_BASE = API_BASE_RAW.replace(/\/+$/, "");
+const API_PREFIX = API_BASE.endsWith("/api") ? API_BASE : `${API_BASE}/api`;
+>>>>>>> origin/dev
 
 export const fetchInspirationPlaces = async (
   page = 1,
@@ -28,15 +34,10 @@ export const fetchInspirationPlaces = async (
       params.append("open_now", options.open_now);
     }
 
-    const response = await fetch(
-      `${API_BASE}/api/places/inspiration/?${params.toString()}`
-    );
+    // Use authenticated api instance to include auth headers
+    const response = await api.get(`places/inspiration/?${params.toString()}`);
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch places");
-    }
-
-    const data = await response.json();
+    const data = response.data;
 
     // если API возвращает массив — приводим к одному формату
     return Array.isArray(data)
@@ -68,4 +69,12 @@ export const createMapPlace = async (payload) => {
 
 export const deleteMapPlace = async (placeId) => {
   await api.delete(`places/map-places/${placeId}/`);
+};
+
+export const markPlaceAsVisited = async (placeId) => {
+  const response = await api.post(
+    `places/places/${placeId}/visited/`,
+    {}
+  );
+  return response.data;
 };

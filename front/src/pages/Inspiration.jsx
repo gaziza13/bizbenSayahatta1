@@ -1,29 +1,51 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { fetchInspirationPlaces, toggleMustVisit } from "../api/places";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import AddTripModal from "../components/AddTripModal";
+import PublicTripsSection from "../components/inspiration/PublicTripsSection";
+import PlaceDetailModal from "../components/inspiration/PlaceDetailModal";
+import PlaceCard from "../components/places/PlaceCard";
+import PlaceFilters from "../components/places/PlaceFilters";
 import { fetchProfile } from "../slices/authSlice";
+import {
+  closeTripModal,
+  handleAddComment,
+  handleCreateTrip,
+  handleToggleMustVisit,
+  loadComments,
+  loadPlaces,
+  loadPublicTrips,
+  loadTripCategories,
+  openTripModal,
+} from "../service/placeService";
 import s from "../styles/Inspiration.module.css";
-import api from "../api/axios";
-
-
-const categories = ["all", "restaurant", "museum", "tourist_attraction"];
 
 const Inspiration = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [places, setPlaces] = useState([]);
   const [page, setPage] = useState(1);
   const [next, setNext] = useState(null);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(searchParams.get("q") || "");
   const [category, setCategory] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
-
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTripModalOpen, setIsTripModalOpen] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [tripCategories, setTripCategories] = useState([]);
+
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [publicTrips, setPublicTrips] = useState([]);
+  const [loadingTrips, setLoadingTrips] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.auth);
-  const isAuthed = Boolean(localStorage.getItem("access"));
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const isAuthed = isAuthenticated;
+  const isTripAdvisor = user?.role === "TRIPADVISOR" || user?.role === "ADMIN";
 
   const preferenceFilters = useMemo(() => {
     const prefs = user?.preferences || {};
@@ -36,127 +58,23 @@ const Inspiration = () => {
     };
   }, [user]);
 
-  /* ---------------------------
-     HELPERS
-  --------------------------- */
-
-  const formatCategory = (category) => {
-    if (!category) return "";
-    return category
-      .replace("_", " ")
-      .replace(/\b\w/g, (l) => l.toUpperCase());
-  };
-
-  const renderStars = (rating) => {
-    if (!rating) return null;
-    const fullStars = Math.floor(rating);
-    const emptyStars = 5 - fullStars;
-
-    return (
-      <span>
-        {"★".repeat(fullStars)}
-        {"☆".repeat(emptyStars)}
-        <span style={{ marginLeft: 6, fontWeight: 500 }}>
-          {rating}
-        </span>
-      </span>
-    );
-  };
-
-  const formatLocation = (place) => {
-    const city = (place.city || "").trim();
-    let country = (place.country || "").trim();
-
-    if (!country || country.toLowerCase() === city.toLowerCase()) {
-      const address = (place.address || "").trim();
-      const parts = address.split(",").map((p) => p.trim()).filter(Boolean);
-      const maybeCountry = parts[parts.length - 1];
-      if (maybeCountry && maybeCountry.toLowerCase() !== city.toLowerCase()) {
-        country = maybeCountry;
-      }
-    }
-
-    if (city && country) return `${city}, ${country}`;
-    return city || country || "";
-  };
-
-  const filterByPrice = (places) => {
-    if (priceFilter === "all") return places;
-
-    if (priceFilter === "free") {
-      return places.filter((p) => p.price_level === "PRICE_LEVEL_FREE");
-    }
-
-    if (priceFilter === "paid") {
-      return places.filter(
-        (p) => p.price_level && p.price_level !== "PRICE_LEVEL_FREE"
-      );
-    }
-
-    return places;
-  };
-
-  /* ---------------------------
-     ACTIONS
-  --------------------------- */
-
-  const handleToggleMustVisit = async (placeId, currentValue) => {
-    if (!isAuthed) {
-      navigate("/login");
-      return;
-    }
-
-    try {
-      const data = await toggleMustVisit(placeId, !currentValue);
-      await api.post(`places/places/${placeId}/save/`);
-      console.log("SERVER RESPONSE:", data);
-
-      setPlaces((prev) =>
-        prev.map((place) =>
-          place.id === placeId
-            ? { ...place, is_must_visit: data.is_must_visit }
-            : place
-        )
-      );
-
-      setSelectedPlace((prev) =>
-        prev && prev.id === placeId
-          ? { ...prev, is_must_visit: data.is_must_visit }
-          : prev
-      );
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleCreateTrip = () => {
-    if (!isAuthed) {
-      navigate("/login");
-      return;
-    }
-    navigate("/trip");
-  };
-
-  const loadPlaces = async () => {
-    const data = await fetchInspirationPlaces(
+  useEffect(() => {
+    loadPlaces({
       page,
       search,
       category,
-      preferenceFilters
-    );
-
-    const filteredResults = filterByPrice(data.results);
-
-    setPlaces((prev) =>
-      page === 1 ? filteredResults : [...prev, ...filteredResults]
-    );
-
-    setNext(data.next);
-  };
+      preferenceFilters,
+      priceFilter,
+      dateFrom,
+      dateTo,
+      setPlaces,
+      setNext,
+    });
+  }, [page, search, category, preferenceFilters, priceFilter, dateFrom, dateTo]);
 
   useEffect(() => {
-    setPage(1);
-  }, [search, category, priceFilter]);
+    loadPublicTrips({ setLoadingTrips, setPublicTrips });
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("access");
@@ -166,193 +84,168 @@ const Inspiration = () => {
   }, [dispatch, user]);
 
   useEffect(() => {
-    loadPlaces();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, search, category, priceFilter, preferenceFilters]);
+    if (!isTripAdvisor || tripCategories.length > 0) return;
+    loadTripCategories({ setTripCategories });
+  }, [isTripAdvisor, tripCategories.length]);
 
-  /* ---------------------------
-     RENDER
-  --------------------------- */
+  const handleSearchChange = (value) => {
+    setPage(1);
+    setSearch(value);
+    const nextParams = new URLSearchParams(searchParams);
+    if (value.trim()) {
+      nextParams.set("q", value);
+    } else {
+      nextParams.delete("q");
+    }
+    setSearchParams(nextParams, { replace: true });
+  };
+
+  const openPlaceModal = (place) => {
+    setSelectedPlace(place);
+    setIsModalOpen(true);
+    loadComments({
+      placeId: place.id,
+      setLoadingComments,
+      setComments,
+    });
+  };
+
+  const closePlaceModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleTripCreated = async () => {
+    await loadPublicTrips({ setLoadingTrips, setPublicTrips });
+  };
+
+  const handleToggleFavoriteInPlace = async (placeId) => {
+    const place = places.find((item) => item.id === placeId);
+    if (!place) return;
+    await handleToggleMustVisit({
+      placeId,
+      currentValue: place.is_must_visit,
+      isAuthed,
+      navigate,
+      setPlaces,
+      setSelectedPlace,
+    });
+  };
 
   return (
     <div className={s.page}>
       <h1 className={s.title}>Inspiration</h1>
 
-      <input
-        className={s.search}
-        placeholder="Search destination..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
+      <div className={s.searchRow}>
+        <input
+          className={s.search}
+          placeholder="Search destination..."
+          value={search}
+          onChange={(e) => handleSearchChange(e.target.value)}
+        />
+
+        {isTripAdvisor && (
+          <button
+            className="add-trip-btn"
+            onClick={() =>
+              openTripModal({
+                isAuthed,
+                isTripAdvisor,
+                navigate,
+                setIsTripModalOpen,
+              })
+            }
+          >
+            + Add New Trip
+          </button>
+        )}
+      </div>
+
+      <PlaceFilters
+        styles={s}
+        category={category}
+        onCategoryChange={(value) => {
+          setPage(1);
+          setCategory(value);
+        }}
+        priceFilter={priceFilter}
+        onPriceFilterChange={(value) => {
+          setPage(1);
+          setPriceFilter(value);
+        }}
+        dateFrom={dateFrom}
+        onDateFromChange={(value) => {
+          setPage(1);
+          setDateFrom(value);
+        }}
+        dateTo={dateTo}
+        onDateToChange={(value) => {
+          setPage(1);
+          setDateTo(value);
+        }}
       />
 
-      <div className={s.controls}>
-        <div className={s.selectRowWithShadow}>
-          <div className={s.selectBlock}>
-            <span className={s.selectLabel}>By category</span>
-            <select
-              className={s.select}
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c === "all"
-                    ? "All categories"
-                    : formatCategory(c)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className={s.selectBlock}>
-            <span className={s.selectLabel}>By price</span>
-            <select
-              className={s.select}
-              value={priceFilter}
-              onChange={(e) => setPriceFilter(e.target.value)}
-            >
-              <option value="all">All prices</option>
-              <option value="free">Free</option>
-              <option value="paid">Paid</option>
-            </select>
-          </div>
-        </div>
-      </div>
+      <PublicTripsSection styles={s} loadingTrips={loadingTrips} publicTrips={publicTrips} />
 
       <div className={s.grid}>
         {places.map((place) => (
-          <div
+          <PlaceCard
             key={place.id}
-            className={s.card}
-            onClick={() => {
-              setSelectedPlace(place);
-              setIsModalOpen(true);
-            }}
-          >
-            {place.photo_url ? (
-              <img
-                className={s.photo}
-                src={place.photo_url}
-                alt={place.name}
-                loading="lazy"
-              />
-            ) : (
-              <div className={s.photoPlaceholder} />
-            )}
-
-            <div className={s.cardHeader}>
-              <span className={s.category}>
-                {formatCategory(place.category)}
-              </span>
-              <div className={s.metaRow}>
-                {place.rating && (
-                  <span className={s.rating}>
-                    ★ {place.rating}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <h3 className={s.name}>{place.name}</h3>
-            <p className={s.location}>{formatLocation(place)}</p>
-          </div>
+            place={place}
+            variant="inspiration"
+            isFavorited={place.is_must_visit}
+            onOpen={() => openPlaceModal(place)}
+            onToggleFavorite={() => handleToggleFavoriteInPlace(place.id)}
+          />
         ))}
       </div>
 
       {next && (
-        <button
-          className={s.loadMore}
-          onClick={() => setPage((p) => p + 1)}
-        >
+        <button className={s.loadMore} onClick={() => setPage((prev) => prev + 1)}>
           Load more
         </button>
       )}
 
-      {isModalOpen && selectedPlace && (
-        <div
-          className={s.modalOverlay}
-          onClick={() => setIsModalOpen(false)}
-        >
-          <div
-            className={s.modal}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {selectedPlace.photo_url && (
-              <img
-                className={s.modalPhoto}
-                src={selectedPlace.photo_url}
-                alt={selectedPlace.name}
-              />
-            )}
+      {isModalOpen && selectedPlace ? (
+        <PlaceDetailModal
+          styles={s}
+          place={selectedPlace}
+          isAuthed={isAuthed}
+          comments={comments}
+          newComment={newComment}
+          loadingComments={loadingComments}
+          navigate={navigate}
+          onClose={closePlaceModal}
+          onToggleMustVisit={() =>
+            handleToggleMustVisit({
+              placeId: selectedPlace.id,
+              currentValue: selectedPlace.is_must_visit,
+              isAuthed,
+              navigate,
+              setPlaces,
+              setSelectedPlace,
+            })
+          }
+          onCreateTrip={() => handleCreateTrip({ isAuthed, navigate })}
+          onCommentChange={setNewComment}
+          onAddComment={() =>
+            handleAddComment({
+              placeId: selectedPlace.id,
+              newComment,
+              isAuthed,
+              navigate,
+              setComments,
+              setNewComment,
+            })
+          }
+        />
+      ) : null}
 
-            <div className={s.modalContent}>
-              <h2>{selectedPlace.name}</h2>
-
-              <p>
-                <strong>Category:</strong>{" "}
-                {formatCategory(selectedPlace.category)}
-              </p>
-
-              {selectedPlace.rating && (
-                <p>
-                  <strong>Rating:</strong>{" "}
-                  {renderStars(selectedPlace.rating)}
-                </p>
-              )}
-
-              <p>
-                {selectedPlace.description ||
-                  "No description available"}
-              </p>
-
-              <p>
-                <strong>Location:</strong>{" "}
-                {formatLocation(selectedPlace)}
-              </p>
-
-              {selectedPlace.opening_hours?.openNow !==
-                undefined && (
-                <p>
-                  <strong>Status:</strong>{" "}
-                  {selectedPlace.opening_hours.openNow
-                    ? "Open now"
-                    : "Closed"}
-                </p>
-              )}
-
-              <div className={s.modalActions}>
-                <button
-                  className={s.lightActionBtn}
-                  onClick={() =>
-                    handleToggleMustVisit(
-                      selectedPlace.id,
-                      selectedPlace.is_must_visit
-                    )
-                  }
-                >
-                  {selectedPlace.is_must_visit
-                    ? "💚 Added to wishlist"
-                    : "❤️ Add to wishlist"}
-                </button>
-
-                <button
-                  className={s.lightActionBtn}
-                  onClick={handleCreateTrip}
-                >
-                  ✈️ Add to trip
-                </button>
-              </div>
-            </div>
-
-            <button
-              className={s.modalClose}
-              onClick={() => setIsModalOpen(false)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      <AddTripModal
+        isOpen={isTripModalOpen}
+        onClose={() => closeTripModal({ setIsTripModalOpen })}
+        tripCategories={tripCategories}
+        onTripCreated={handleTripCreated}
+      />
     </div>
   );
 };

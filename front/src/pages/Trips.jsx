@@ -49,13 +49,19 @@ export default function TripPage() {
       setError("");
       try {
         const res = await api.get("llm/threads/");
-        const plannerThreads = (res.data || []).filter((thread) => thread.kind === "planner");
-        const detailRequests = plannerThreads.map((thread) =>
+        const detailRequests = (res.data || []).map((thread) =>
           api.get(`llm/threads/${thread.id}/`)
         );
         const details = await Promise.all(detailRequests);
         const cards = details
-          .map((detail) => buildTripCard(detail.data))
+          .map((detail) => detail.data)
+          .filter((thread) => {
+            const itinerary = thread.plan_json?.itinerary || [];
+            return Boolean(thread.plan_json) && (
+              itinerary.length > 0 || Number(thread.plan_json?.days_generated || 0) > 0
+            );
+          })
+          .map((thread) => buildTripCard(thread))
           .sort((a, b) => b.id - a.id);
         setTrips(cards);
       } catch (err) {
@@ -125,39 +131,125 @@ export default function TripPage() {
 
       {!loading && !error && visibleTrips.length > 0 ? (
         <main className={s.grid}>
-          {visibleTrips.map((trip) => (
-            <article className={s.card} key={trip.id}>
-              {trip.photoUrl ? (
-                <img className={s.photo} src={trip.photoUrl} alt={trip.title} />
-              ) : (
-                <div className={s.photoPlaceholder} />
-              )}
+  {visibleTrips.map((trip) => (
+    <article className={s.card} key={trip.id}>
+      <div className={s.photoWrapper}>
+        {trip.photoUrl ? (
+          <img className={s.photo} src={trip.photoUrl} alt={trip.title} />
+        ) : (
+          <div className={s.photoPlaceholder} />
+        )}
+        <span
+          className={`${s.statusBadge} ${
+            trip.status === "active" ? s.statusActive : s.statusUpcoming
+          }`}
+        >
+          {trip.status === "active" ? "Active Now" : "Upcoming"}
+        </span>
+      </div>
 
-              <div className={s.cardHeader}>
-                <span className={s.category}>{trip.city}</span>
-                <span className={`${s.status} ${trip.status === "active" ? s.statusActive : s.statusPast}`}>
-                  {trip.status === "active" ? "Active" : "Past"}
-                </span>
-              </div>
+      <div className={s.cardContent}>
+        <h3 className={s.tripTitle}>{trip.title}</h3>
+        <p className={s.tripLocation}>{trip.city}</p>
 
-              <h3 className={s.name}>{trip.title}</h3>
-              <p className={s.location}>{trip.dateRange}</p>
-              <p className={s.summary}>{trip.summary}</p>
+        <div className={s.tripInfo}>
+          <span>{trip.dateRange}</span>
+          <span>{trip.stopsCount} travelers</span>
+        </div>
 
-              <div className={s.badges}>
-                <span className={s.chip}>{trip.daysGenerated} days</span>
-                <span className={s.chip}>{trip.stopsCount} places</span>
-              </div>
+        <div className={s.budget}>
+          <label>Budget</label>
+          <div className={s.budgetBar}>
+            <div
+              className={s.budgetProgress}
+              style={{ width: `${(trip.daysGenerated / 10) * 100}%` }}
+            ></div>
+          </div>
+          <span>${trip.daysGenerated * 1000} / $4,000</span>
+        </div>
 
-              <div className={s.actions}>
-                <Link className={s.action} to={`/chat?thread=${trip.id}`}>
-                  Open in Chat
-                </Link>
-              </div>
-            </article>
+        <div className={s.chipContainer}>
+          {trip.summary.split(",").map((stop, idx) => (
+            <span className={s.chip} key={idx}>
+              {stop.trim()}
+            </span>
           ))}
-        </main>
+        </div>
+
+        <Link className={s.viewTrip} to={`/chat?thread=${trip.id}`}>
+          View your trip →
+        </Link>
+      </div>
+    </article>
+  ))}
+</main>
       ) : null}
     </div>
   );
 }
+
+
+
+
+// import { useEffect, useMemo, useState } from "react";
+// import api from "../api/axios";
+// import s from "../styles/Trips.module.css";
+// import { buildTripCard } from "../utils/tripHelpers";
+// import TripTabs from "../components/trips/TripTabs";
+// import TripCard from "../components/trips/TripCard";
+// import TripEmpty from "../components/trips/TripEmpty";
+
+// export default function TripPage() {
+//   const [trips, setTrips] = useState([]);
+//   const [tab, setTab] = useState("active");
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState("");
+
+//   useEffect(() => {
+//     const loadTrips = async () => {
+//       setLoading(true);
+//       setError("");
+//       try {
+//         const res = await api.get("llm/threads/");
+//         const plannerThreads = (res.data || []).filter((t) => t.kind === "planner");
+//         const details = await Promise.all(
+//           plannerThreads.map((t) => api.get(`llm/threads/${t.id}/`))
+//         );
+//         setTrips(details.map((d) => buildTripCard(d.data)).sort((a, b) => b.id - a.id));
+//       } catch (err) {
+//         setError(err.response?.data?.detail || "Failed to load trips");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     loadTrips();
+//   }, []);
+
+//   const activeTrips = useMemo(() => trips.filter((t) => t.status === "active"), [trips]);
+//   const pastTrips = useMemo(() => trips.filter((t) => t.status === "past"), [trips]);
+//   const visibleTrips = tab === "active" ? activeTrips : pastTrips;
+
+//   return (
+//     <div className={s.page}>
+//       <header className={s.header}>
+//         <h1 className={s.title}>My Trips</h1>
+//         <p className={s.subtitle}>Active and completed journeys in one place</p>
+//         <TripTabs
+//           tab={tab} onTabChange={setTab}
+//           activeCount={activeTrips.length} pastCount={pastTrips.length}
+//         />
+//       </header>
+
+//       {loading && <p className={s.meta}>Loading trips...</p>}
+//       {error && <p className={s.error}>{error}</p>}
+
+//       {!loading && !error && visibleTrips.length === 0 && <TripEmpty />}
+
+//       {!loading && !error && visibleTrips.length > 0 && (
+//         <main className={s.grid}>
+//           {visibleTrips.map((trip) => <TripCard key={trip.id} trip={trip} />)}
+//         </main>
+//       )}
+//     </div>
+//   );
+// }

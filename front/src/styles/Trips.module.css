@@ -1,8 +1,16 @@
+/* ===============================
+   PAGE LAYOUT
+================================= */
+
 .page {
   background: #fafaf9;
   min-height: 100vh;
   padding: 32px 48px;
 }
+
+/* ===============================
+   HEADER
+================================= */
 
 .header {
   margin-bottom: 24px;
@@ -19,6 +27,10 @@
   color: #666;
   font-size: 15px;
 }
+
+/* ===============================
+   TABS
+================================= */
 
 .tabs {
   display: flex;
@@ -44,6 +56,10 @@
   font-weight: 600;
 }
 
+/* ===============================
+   FEEDBACK
+================================= */
+
 .meta {
   color: #666;
 }
@@ -51,6 +67,10 @@
 .error {
   color: #b42318;
 }
+
+/* ===============================
+   EMPTY STATE
+================================= */
 
 .empty {
   display: grid;
@@ -95,6 +115,10 @@
   border-radius: 18px;
 }
 
+/* ===============================
+   GRID
+================================= */
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -102,21 +126,14 @@
   margin-top: 20px;
 }
 
-.card {
-  background: white;
-  border-radius: 22px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+/* ===============================
+   CARD SHELL
+================================= */
 
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
-}
+
+/* ===============================
+   CARD MEDIA
+================================= */
 
 .photo {
   width: 100%;
@@ -132,6 +149,10 @@
   border-radius: 16px;
   background: linear-gradient(135deg, #f6f5f2, #ecebe6);
 }
+
+/* ===============================
+   CARD META
+================================= */
 
 .cardHeader {
   display: flex;
@@ -161,6 +182,10 @@
   color: #533f1f;
   background: #f7e8c6;
 }
+
+/* ===============================
+   CARD CONTENT
+================================= */
 
 .name {
   font-size: 18px;
@@ -209,6 +234,10 @@
   text-decoration: none;
 }
 
+/* ===============================
+   RESPONSIVE
+================================= */
+
 @media (max-width: 980px) {
   .page {
     padding: 24px 20px;
@@ -217,4 +246,141 @@
   .empty {
     grid-template-columns: 1fr;
   }
+}
+
+/* ===============================
+   ENHANCED TRIP CARD
+================================= */
+
+.photoWrapper {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.statusBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  color: white;
+}
+
+.statusActive {
+  background: #4caf50; /* зеленый */
+}
+
+.statusUpcoming {
+  background: #2196f3; /* синий */
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+}
+
+.tripTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.tripLocation {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.tripInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+}
+
+.budget {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.budgetBar {
+  width: 100%;
+  height: 6px;
+  background: #eee;
+  border-radius: 4px;
+  margin: 4px 0;
+  overflow: hidden;
+}
+
+.budgetProgress {
+  height: 100%;
+  background: #4caf50;
+}
+
+.chipContainer {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.chip {
+  font-size: 10px;
+  background: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.viewTrip {
+  margin-top: auto;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  text-decoration: none;
+}
+
+.s.card {
+  max-width: 400px;
+  background: white;
+  border-radius: 22px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+}
+
+.s.photoWrapper {
+  position: relative;
+}
+
+.s.overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  color: white;
+}
+
+.s.overlayTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.s.overlayLocation {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
 }

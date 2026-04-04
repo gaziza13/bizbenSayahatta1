@@ -1,6 +1,55 @@
+/* ===============================
+   FAVORITE BUTTON
+================================= */
+
+.heartBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  z-index: 2;
+}
+
+.heartBtn:hover {
+  backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.heartBtn:hover svg path {
+  fill: none;
+  stroke: #e53935;
+}
+
+.heartActive {
+  backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.heartActive svg path {
+  fill: #e53935 !important;
+  stroke: #e53935 !important;
+}
+
+/* ===============================
+   PAGE SHELL
+================================= */
+
 .profile-wrapper {
   width: 100%;
 }
+
+/* ===============================
+   COVER
+================================= */
 
 .cover {
   height: 140px;
@@ -35,22 +84,27 @@
   height: 28px;
   cursor: pointer;
   z-index: 10;
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 50%;
   padding: 4px;
-  transition: all 0.3s;
+  transition: all .3s;
 }
 
 .cover-edit-icon:hover {
-  background: rgba(255, 255, 255, 1);
   transform: scale(1.1);
 }
+
+/* ===============================
+   PROFILE CONTENT
+================================= */
 
 .profile-content {
   position: relative;
   padding: 40px;
   margin-left: 50px;
 }
+
+/* ===============================
+   AVATAR
+================================= */
 
 .avatar {
   width: 120px;
@@ -72,13 +126,18 @@
   border-radius: 50%;
 }
 
+/* ===============================
+   INFO BLOCK
+================================= */
+
 .info {
-  margin-top: 20px;
-  color:#5A5450;
-  font-size: 24px;
+  flex: 1;
+  margin-left: 170px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
+  color: #5a5450;
+
 }
 
 .email {
@@ -99,58 +158,191 @@
   margin-left: 6px;
 }
 
+/* ===============================
+   ADVISOR STATE
+================================= */
+
+.advisor-status {
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-approved {
+  background: #e8f7ef;
+  color: #067647;
+}
+
+.status-pending {
+  background: #fff7e8;
+  color: #b54708;
+}
+
+.status-rejected,
+.status-more_info {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.advisor-note {
+  font-size: 14px;
+  color: #475467;
+}
+
+.advisor-cta {
+  width: fit-content;
+  margin-top: 2px;
+  border-radius: 20px;
+  border: 2px solid #5a5450;
+  background: #f3f2ee;
+  color: #5a5450;
+  padding: 7px 20px;
+  cursor: pointer;
+}
+
+.advisor-cta:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.advisor-panel {
+  margin-top: 10px;
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 420px;
+}
+
+/* ===============================
+   PRIVACY PANEL
+================================= */
+
+.privacy-panel {
+  margin-top: 10px;
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  padding: 12px;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #fafaf9;
+}
+
+.privacy-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.privacy-header strong {
+  font-size: 16px;
+  color: #5a5450;
+}
+
+.privacy-header span {
+  font-size: 12px;
+  color: #667085;
+}
+
+.privacy-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.privacy-option:hover {
+  background: #f9fafb;
+  border-color: #d0d5dd;
+}
+
+.privacy-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: #5a5450;
+}
+
+.privacy-option > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.privacy-option-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #5a5450;
+}
+
+.privacy-option-note {
+  font-size: 12px;
+  color: #667085;
+}
+
 .level {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 12px 0;
-  color:#5A5450;
-  font-size: 20px;
+  margin: 1px 0;
+  color: #5a5450;
+  font-size: 17px;
 }
 
 .level button {
-  padding: 6px 14px;
+  padding: 5px 20px;
   border-radius: 20px;
   border: none;
-  background: #F3F2EE;
+  background: #f3f2ee;
   cursor: pointer;
-  color:#5A5450;
+  color: #5a5450;
   margin-left: 100px;
-  padding: 7px 30px;
 }
 
 .logout {
-  display: block;             
-  margin: 30px auto 0 500px;   
-  padding: 7px 100px;        
+  display: block;
+  margin: 30px auto 0 350px;
+  padding: 5px 70px;
   border-radius: 20px;
   border: none;
-  background: #F3F2EE;
-  color: #5A5450;
+  background: #f3f2ee;
+  color: #5a5450;
   cursor: pointer;
-  text-align: center;         
+  text-align: center;
 }
-
 
 .edit {
   position: absolute;
-  right: 500px;       
-  top: 70px;        
+  right: 500px;
+  top: 70px;
   cursor: pointer;
 }
 
-.level button, .logout {
-  border: 2px solid #5A5450; 
-  background: #F3F2EE;       
-  border-radius: 20px;        
+.level button,
+.logout {
+  border: 2px solid #5a5450;
+  background: #f3f2ee;
+  border-radius: 20px;
   cursor: pointer;
-  color: #5A5450;
-  transition: all 0.3s;       
+  color: #5a5450;
+  transition: all .3s;
 }
 
-.level button:hover, .logout:hover {
-  background: #5A5450;
-  color: #F3F2EE;
+.level button:hover,
+.logout:hover {
+  background: #5a5450;
+  color: #f3f2ee;
 }
 
 .plan-link {
@@ -160,7 +352,7 @@
   font-size: 16px;
   width: fit-content;
   border-bottom: 1px solid transparent;
-  transition: border-color 0.3s, color 0.3s;
+  transition: border-color .3s, color .3s;
 }
 
 .plan-link:hover {
@@ -168,12 +360,10 @@
   border-bottom-color: #3f3a36;
 }
 
-/* MODAL */
-
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, .4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -184,11 +374,54 @@
   background: white;
   padding: 20px;
   border-radius: 12px;
-  width: 300px;
+  width: 320px;
+  max-height: 80vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
   color: #5a5450;
+}
+
+.advisor-modal {
+  width: 100%;
+  max-width: 520px;
+}
+
+.advisor-modal-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.advisor-modal-header h3 {
+  margin: 0;
+}
+
+.advisor-rules {
+  font-size: 14px;
+  color: #667085;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.advisor-form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.advisor-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.advisor-cv-label input[type="file"] {
+  padding: 6px 0;
+  border: none;
+  background: transparent;
 }
 
 .modal label {
@@ -199,63 +432,277 @@
 }
 
 .modal input,
-.modal select {
+.modal select,
+.modal textarea {
   padding: 8px 12px;
-  border-radius: 20px;
-  border: 2px solid #5a5450;
-  background: #f3f2ee;
+  border-radius: 10px;
+  border: 1px solid #d0d5dd;
+  background: #f9fafb;
   color: #5a5450;
   outline: none;
   font-size: 14px;
   margin-top: 4px;
 }
 
-.modal select {
-  padding: 8px 12px;
-  border-radius: 10px;
+.chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.chip {
+  border: 1px solid #d0d5dd;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.chip-selected {
   background: #f3f2ee;
-  color: #5a5450;
-  outline: none;
-  border: none;
-  font-size: 14px;
-  margin-top: 4px;
-  margin-left: 12px;
+  border-color: #5a5450;
+}
+
+.check-row {
+  display: inline-grid;
+  grid-auto-flow: column;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.advisor-error {
+  font-size: 13px;
+  color: #b42318;
+  margin: 0;
+}
+
+.advisor-success {
+  font-size: 13px;
+  color: #0c3b2e;
+  margin: 0;
+  background: #e9f6ef;
+  padding: 8px 10px;
+  border-radius: 10px;
 }
 
 .modal-actions {
   display: flex;
-  gap: 10px;
+  justify-content: flex-end;
+  gap: 12px;
   margin-top: 10px;
 }
 
-.modal-actions button {
-  flex: 1;
-  padding: 6px;
-  border-radius: 10px;
-  background: #f3f2ee;
-  color: #5a5450;
-  cursor: pointer;
+.cancel-btn,
+.save-btn {
+  flex: 0 !important;
+  width: auto;
+  min-width: 100px;
+  max-width: 50%;
   border: none;
-  transition: all 0.3s;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
 }
 
-.modal-actions button:hover {
-  background: #5a5450;
-  color: #f3f2ee;
+/* CANCEL */
+.cancel-btn {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.modal-actions .cancel-btn:hover {
+  background: #9ca3af !important;
+}
+
+/* ADD TRIP */
+
+
+.modal-actions .save-btn:hover {
+  background: #9333ea !important;
+  color: white;
 }
 
 .remove-avatar {
-  padding: 6px 12px;
-  margin: 0px 80px;
-  border-radius: 10px;
-  background: #f3f2ee;
-  color: #5a5450;
+  min-width: 120px;
+  padding: 10px 20px;
+  border-radius: 12px;
   cursor: pointer;
+  font-weight: 500;
+  transition: background 0.25s ease;
+  font-size: 14px;
   border: none;
-  transition: all 0.3s;
+  margin: 0 auto;
+}
+
+/* вариант как Cancel */
+.remove-avatar {
+  background: #e5e7eb;
+  color: #111827;
 }
 
 .remove-avatar:hover {
+  background: #9ca3af;
+  color: #fff;
+}
+
+@media (max-width:900px) {
+  .profile-content {
+    margin-left: 0;
+    padding: 20px;
+  }
+
+  .edit {
+    right: 16px;
+    top: 20px;
+  }
+
+  .logout {
+    margin: 20px 0 0;
+    width: fit-content;
+    padding: 7px 40px;
+  }
+
+  .level button {
+    margin-left: 0;
+  }
+
+  .advisor-modal {
+    width: 92vw;
+  }
+}
+
+/* advisor block */
+
+.advisor-block {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #d0d5dd;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 420px;
+}
+
+.advisor-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.advisor-label {
+  font-size: 15px;
+  color: #5a5450;
+}
+
+.advisor-badge {
+  font-size: 13px;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-weight: 500;
+}
+
+/* status colors */
+
+.badge-approved {
+  background: #e8f7ef;
+  color: #067647;
+}
+
+.badge-pending {
+  background: #fff7e8;
+  color: #b54708;
+}
+
+.badge-rejected,
+.badge-more_info {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+/* manager note */
+
+.advisor-note {
+  font-size: 13px;
+  color: #667085;
+  margin: 0;
+}
+
+/* button */
+
+.advisor-button {
+  width: fit-content;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid #5a5450;
+  background: #f3f2ee;
+  color: #5a5450;
+  cursor: pointer;
+  transition: all .25s;
+}
+
+.advisor-button:hover {
   background: #5a5450;
   color: #f3f2ee;
+}
+
+.advisor-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* advisor tools */
+
+.advisor-tools {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #d0d5dd;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 420px;
+}
+
+.advisor-tools-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.advisor-active-dot {
+  width: 8px;
+  height: 8px;
+  background: #12b76a;
+  border-radius: 50%;
+}
+
+.advisor-links {
+  display: flex;
+  gap: 12px;
+}
+
+.advisor-links a {
+  font-size: 14px;
+  color: #5a5450;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all .2s;
+}
+
+.advisor-links a:hover {
+  border-bottom: 1px solid #5a5450;
+}
+
+.advisor-tools-text {
+  font-size: 13px;
+  color: #667085;
+  margin: 0;
 }

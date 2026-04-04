@@ -1,4 +1,6 @@
-/* ===== PAGE LAYOUT ===== */
+/* ===============================
+   PAGE LAYOUT
+================================= */
 .map-page {
   display: flex;
   height: 100vh;
@@ -9,7 +11,7 @@
 
 /* ===============================
    SIDEBAR
-================================ */
+================================= */
 .map-sidebar {
   width: 320px;
   min-width: 320px;
@@ -23,7 +25,9 @@
   box-shadow: 2px 0 8px rgba(0,0,0,0.03); /* лёгкая тень */
 }
 
-/* Верхняя фиксированная часть */
+/* ===============================
+   SIDEBAR TOP
+================================= */
 .sidebar-top {
   flex: 0 0 auto;
   display: flex;
@@ -31,7 +35,9 @@
   gap: 18px; /* чуть плотнее */
 }
 
-/* аккуратная линия прогресса */
+/* ===============================
+   PROGRESS LINE
+================================= */
 .sidebar-progress-line {
   position: absolute;
   left: 18px; /* чуть отступ правее */
@@ -42,7 +48,9 @@
   border-radius: 10px;
 }
 
-/* ===== TITLE ===== */
+/* ===============================
+   SIDEBAR TITLE
+================================= */
 .sidebar-title {
   font-size: 16px;
   font-weight: 600;
@@ -51,7 +59,9 @@
   color: #1e1e1e; /* чуть контрастнее */
 }
 
-/* ===== ГОРИЗОНТАЛЬНЫЕ БЕЙДЖИ ===== */
+/* ===============================
+   BADGE SCROLLER
+================================= */
 .badge-scroll {
   display: flex;
   gap: 12px;
@@ -121,7 +131,9 @@
   word-break: break-word;
 }
 
-/* Мини-прогресс бар под бейджем */
+/* ===============================
+   BADGE PROGRESS
+================================= */
 .mini-progress {
   width: 100%;
   height: 4px;
@@ -144,7 +156,9 @@
   margin-top: 3px;
 }
 
-/* ===== LEVEL DOTS ===== */
+/* ===============================
+   LEVEL DOTS
+================================= */
 .level-dots {
   display: flex;
   gap: 10px;
@@ -167,12 +181,14 @@
 }
 
 .level-dot.active {
-  background: #6c4eff;
+  background: #4811AE;
   color: #fff;
-  box-shadow: 0 2px 8px rgba(108,78,255,0.3); /* лёгкая подсветка */
+  box-shadow: 0 2px 8px 4811AE; /* лёгкая подсветка */
 }
 
-/* ===== STATS ===== */
+/* ===============================
+   STATS
+================================= */
 .stats {
   margin-bottom: 20px;
 }
@@ -196,7 +212,7 @@
   padding: 10px 5px;
   text-align: center;
   box-shadow: 0 4px 12px rgba(0,0,0,0.06); /* чуть мягче */
-  font-size: 16px;
+  font-size: 14px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -217,18 +233,21 @@
   color: #777;
 }
 
-/* Yellow progress pill */
+/* ===============================
+   WORLD PROGRESS
+================================= */
 .world-progress {
   background: #ffdf70; /* чуть мягче */
   padding: 10px;
   border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
   text-align: center;
-  color: #1e1e1e;
+  color: #4811AE;
 }
 
-/* ===== VISITED PLACES SECTION ===== */
+/* ===============================
+   VISITED PLACES
+================================= */
 .places-section {
   margin-top: 15px;
   flex: 1;
@@ -260,18 +279,43 @@
   background: #f2e9ff;
 }
 
+.shared-maps-btn {
+  width: 100%;
+  border: 1px solid #d0d5dd;
+  background: #fff;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.shared-maps-btn:hover {
+  background: #f9fafb;
+  border-color: #c4c9d1;
+}
+
+.shared-maps-btn:active {
+  transform: translateY(1px);
+}
+
+
 .visited-list {
+  max-height: 300px; 
   overflow-y: auto;
   flex: 1;
+  display: flex;
+  flex-direction: column;
   padding-right: 5px;
   margin-top: 8px;
-  max-height: calc(100vh - 480px);
+  gap: 8px;
 }
 
 .place {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
   padding: 10px;
   background: #fff;
@@ -284,10 +328,6 @@
 .place:hover {
   transform: translateX(2px);
   box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-}
-
-.place > div:first-child {
-  flex: 1;
 }
 
 .place strong {
@@ -327,7 +367,9 @@
   color: #e33;
 }
 
-/* ===== MAP AREA ===== */
+/* ===============================
+   MAP AREA
+================================= */
 .map-area {
   flex: 1;
   position: relative;
@@ -335,13 +377,62 @@
   overflow: hidden;
 }
 
+.map-legend {
+  position: absolute;
+  bottom: 2rem;
+  left: 1rem;
+  z-index: 1000;
+  background: white;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  font-size: 13px;
+}
+
+.map-legend h4 {
+  margin: 0 0 0.5rem;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #1e88e5;
+  display: inline-block;
+}
+
+.visited-country { background: #FDD835; }
+.unexplored-country { background: #E0E0E0; }
+.visited-city { background: #1e88e5; }
+
+
+
+
 .leaflet-container {
   width: 100%;
   height: 100%;
   z-index: 1;
 }
 
-/* ===== ADD PLACE BUTTON ===== */
+/* ===============================
+   MAP ACTION BUTTON
+================================= */
 .add-place-btn {
   position: absolute;
   bottom: 20px;
@@ -364,7 +455,9 @@
   transform: scale(1.03);
 }
 
-/* ===== MODAL ===== */
+/* ===============================
+   MODAL
+================================= */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -399,7 +492,21 @@
   font-size: 14px;
 }
 
+.modal select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  background: #fff;
+}
+
 .modal input:focus {
+  outline: none;
+  border-color: #6c4eff;
+}
+
+.modal select:focus {
   outline: none;
   border-color: #6c4eff;
 }
@@ -440,9 +547,50 @@
 
 .place-info {
   display: flex;
-  align-items: center;
-  gap: 14px; /* расстояние между городом и страной */
-  flex-wrap: wrap; /* на случай длинных названий */
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.place-info span {
+  font-size: 12px;
+  color: #667085;
+}
+
+.place-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.date {
+  font-size: 12px;
+  color: #475467;
+  white-space: nowrap;
+}
+
+.remove-place-btn {
+  border: 1px solid #d0d5dd;
+  background: #fff;
+  color: #344054;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.remove-place-btn:hover {
+  background: #f9fafb;
+}
+
+.month-year-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 /* ===== ГОРИЗОНТАЛЬНЫЕ БЕЙДЖИ ===== */
@@ -563,4 +711,45 @@
   padding: 2px 6px;
   border-radius: 30px;
   display: inline-block;
+}
+.badge-card.locked {
+  opacity: 0.3;
+  background-color: #ccc;
+  color: #666;
+}
+
+.badge-card.completed {
+  background-color: #ffea73;
+  color: #000;
+}
+
+.badge-card.current {
+  border: 2px solid #1e88e5;
+  background-color: #fff8ba;
+}
+
+/* Slide-in animation for edit actions */
+.place-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Subtle highlight when in edit mode */
+.place--editing {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+/* Active state for the Done button */
+.edit-mode-active {
+  color: var(--accent, #1e88e5);
+  font-weight: 600;
 }
