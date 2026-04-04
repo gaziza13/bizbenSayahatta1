@@ -14,33 +14,25 @@ from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
 import os
-<<<<<<< HEAD
-import dj_database_url
-
-=======
 from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
->>>>>>> origin/dev
 
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
-<<<<<<< HEAD
-DATABASE_URL = os.getenv("DATABASE_URL")
-=======
 DATABASE_URL = (os.getenv("DATABASE_URL") or "").strip()
-if (DATABASE_URL.startswith("b'") and DATABASE_URL.endswith("'")) or (
-    DATABASE_URL.startswith('b"') and DATABASE_URL.endswith('"')
-):
-    DATABASE_URL = DATABASE_URL[2:-1]
+# if (DATABASE_URL.startswith("b'") and DATABASE_URL.endswith("'")) or (
+#     DATABASE_URL.startswith('b"') and DATABASE_URL.endswith('"')
+# ):
+#     DATABASE_URL = DATABASE_URL[2:-1]
 
 # Stripe (Payment Links + webhooks). Never commit real keys.
 STRIPE_SECRET_KEY = (os.getenv("STRIPE_SECRET_KEY") or "").strip()
 STRIPE_WEBHOOK_SECRET = (os.getenv("STRIPE_WEBHOOK_SECRET") or "").strip()
+
 # Base Payment Link URL (no query string). client_reference_id is appended per checkout.
 STRIPE_PAYMENT_LINK_URL = (os.getenv("STRIPE_PAYMENT_LINK_URL") or "").strip()
->>>>>>> origin/dev
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -51,11 +43,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-<<<<<<< HEAD
-SECRET_KEY = os.getenv("SECRET_KEY")
-=======
+
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-insecure-secret-key")
->>>>>>> origin/dev
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False") == "True"
@@ -100,13 +89,6 @@ MIDDLEWARE = [
 #CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
-<<<<<<< HEAD
-=======
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
->>>>>>> origin/dev
     "https://bizbensayahatta.vercel.app",
     "https://bizbensayahatta.onrender.com",
 ]
@@ -137,10 +119,6 @@ WSGI_APPLICATION = 'bizbenSayahatta.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-<<<<<<< HEAD
-DATABASES = {
-    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
-=======
 if not DATABASE_URL:
     raise ImproperlyConfigured("DATABASE_URL must be set. This project is configured to use the external database.")
 
@@ -148,9 +126,7 @@ DATABASES = {
     "default": dj_database_url.parse(
         DATABASE_URL,
         conn_max_age=600,
-        
     )
->>>>>>> origin/dev
 }
 
 # Password validation
