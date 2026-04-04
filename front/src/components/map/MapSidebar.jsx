@@ -6,9 +6,11 @@ import addVPlace from "../../assets/addVPlace.svg"
 import deleteVPlace from "../../assets/deleteVPlace.svg"
 import editVPlace from "../../assets/editVPlace.svg"
 import pinVPlaces from "../../assets/pinVPlaces.svg"
+import "../../styles/MapSidebar.css";
 
-export default function MapSidebar({ places, level, countriesCount, citiesCount, progress, loadingPlaces, onOpenModal, onRemovePlace, onEditPlace,
-  isEditMode, onToggleEditMode,  }) {
+
+export default function MapSidebar({ places, level, countriesCount, citiesCount, progress, loadingPlaces, onOpenModal, onRemovePlace, 
+  isEditMode, onToggleEditMode, }) {
     
   return (
     <aside className="map-sidebar">
@@ -73,25 +75,16 @@ export default function MapSidebar({ places, level, countriesCount, citiesCount,
 
       <section className="visited">
         <div className="visited-header">
-          <h3>Visited Places</h3>
+          
+          <h3 className="visited-title">
+            Visited Places
+            {!isEditMode && (
+              <button className="inline-add-btn" onClick={onOpenModal}>
+                <img src={addVPlace} alt="add"/>
+              </button>
+            )}
+          </h3>
 
-          {!isEditMode && (
-            <button className="add-btn" onClick={onOpenModal}>
-              <img src={addVPlace} alt="Add place" />
-            </button>
-          )}
-
-          {/* Edit mode toggle — label changes like iOS "Edit" / "Done" */}
-          <button
-            className={`add-btn ${isEditMode ? "edit-mode-active" : ""}`}
-            onClick={onToggleEditMode}
-          >
-            {isEditMode ? "Done" : <img src={editVPlace} alt="Edit places" />}
-          </button>
-
-          {/* <button className="add-btn" onClick={onOpenModal}><img src={addVPlace} alt="addVPlace"/></button>
-          <button className="add-btn" ><img src={deleteVPlace} alt="addVPlace"/></button>
-          <button className="add-btn" ><img src={editVPlace} alt="addVPlace"/></button> */}
 
         </div>
 
@@ -100,19 +93,26 @@ export default function MapSidebar({ places, level, countriesCount, citiesCount,
         <div className="visited-list">
           {places.map((p) => (
             <div className="place" key={p.id}>
-              {/* <div className="place-icon">📍</div> */}
-              <img src={pinVPlaces} alt="pinVPlaces"/>
-              <div className="place-info">
-                <strong>{p.city}</strong>
-                <span>{p.country}</span>
-              </div>
-              <div className="place-side">
-                <span className="date">{p.date}</span>
-                <button type="button" className="remove-place-btn" onClick={() => onRemovePlace(p.id)}>
-                  <img src={deleteVPlace} alt="deleteVPlace"/>
+            <img src={pinVPlaces} alt="pinVPlaces"/>
+
+            <div className="place-info">
+              <strong>{p.city}</strong>
+              <span>{p.country}</span>
+            </div>
+
+            <div className="place-side">
+              <span className="date">{p.date}</span> 
+              
+              <div className="place-actions">
+                <button
+                  type="button"
+                  onClick={() => onRemovePlace(p.id)}
+                >
+                  <img src={deleteVPlace} alt="delete"/>
                 </button>
               </div>
             </div>
+          </div>
           ))}
         </div>
       </section>
