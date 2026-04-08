@@ -18,11 +18,17 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from django.http import HttpResponse
 
 from users.views import CustomTokenObtainPairView, CustomTokenRefreshView
 
 
+def _health(_request):
+    return HttpResponse("ok", content_type="text/plain")
+
+
 urlpatterns = [
+    path("", _health),
     path('admin/', admin.site.urls),
     path('api/admin/', include('admin_api.urls')),
     path('api/users/', include('users.urls')),

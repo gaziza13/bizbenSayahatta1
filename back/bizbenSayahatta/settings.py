@@ -68,6 +68,20 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ["*"]
 
+# Render / reverse proxy: локально заголовка нет — Django его игнорирует; на Render нужен для is_secure().
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
+# Django 4+: для POST с HTTPS (в т.ч. логин в /admin/) нужны доверенные origin.
+_csrf_origins = (os.getenv("CSRF_TRUSTED_ORIGINS") or "").strip()
+if _csrf_origins:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(",") if o.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        "https://bizbensayahatta.onrender.com",
+        "https://bizbensayahatta.vercel.app",
+    ]
+
 
 # Application definition
 
@@ -248,6 +262,11 @@ LOGGING = {
     },
     "loggers": {
         "bizbenSayahatta.errors": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.request": {
             "handlers": ["console"],
             "level": "ERROR",
             "propagate": False,
