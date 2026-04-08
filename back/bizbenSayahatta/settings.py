@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 import os
 from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
+import cloudinary
 
 load_dotenv()
 
@@ -33,6 +34,22 @@ STRIPE_WEBHOOK_SECRET = (os.getenv("STRIPE_WEBHOOK_SECRET") or "").strip()
 
 # Base Payment Link URL (no query string). client_reference_id is appended per checkout.
 STRIPE_PAYMENT_LINK_URL = (os.getenv("STRIPE_PAYMENT_LINK_URL") or "").strip()
+
+#
+# Cloudinary (media uploads)
+#
+CLOUDINARY_CLOUD_NAME = (os.getenv("CLOUDINARY_CLOUD_NAME") or "").strip()
+CLOUDINARY_API_KEY = (os.getenv("CLOUDINARY_API_KEY") or "").strip()
+CLOUDINARY_API_SECRET = (os.getenv("CLOUDINARY_API_SECRET") or "").strip()
+USE_CLOUDINARY_STORAGE = bool(CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET)
+
+if USE_CLOUDINARY_STORAGE:
+    cloudinary.config(
+        cloud_name=CLOUDINARY_CLOUD_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_API_SECRET,
+        secure=True,
+    )
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -72,6 +89,12 @@ INSTALLED_APPS = [
     'marketplace',
     'payments.apps.PaymentsConfig',
 ]
+
+if USE_CLOUDINARY_STORAGE:
+    INSTALLED_APPS += [
+        "cloudinary",
+        "cloudinary_storage",
+    ]
 
 MIDDLEWARE = [
     "bizbenSayahatta.middleware.RequestIdMiddleware",
@@ -173,6 +196,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
+
+if USE_CLOUDINARY_STORAGE:
+    # Django 4.2+ recommended way: STORAGES dict
+    STORAGES = {
+        "default": {
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 # Allow typical phone photos for avatar/cover uploads.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024

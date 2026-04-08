@@ -40,7 +40,7 @@ urlpatterns = [
     path("marketplace/", include("marketplace.urls")),
 ]
 
-if settings.DEBUG:
+if settings.DEBUG and not getattr(settings, "USE_CLOUDINARY_STORAGE", False):
     urlpatterns += static(
         settings.MEDIA_URL,
         document_root=settings.MEDIA_ROOT
