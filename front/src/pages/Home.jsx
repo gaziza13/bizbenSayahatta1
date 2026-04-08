@@ -1,4 +1,5 @@
 import "../styles/Home.css";
+import emailjs from "@emailjs/browser";
 import previewImg from "../assets/preview.png";
 import heartImg from "../assets/heart.png";
 import calendarImg from "../assets/calendar.png";
@@ -280,6 +281,59 @@ export default function HomePage() {
     >
       →
     </button>
+  </div>
+</section>
+
+{/* CONTACT US SECTION */}
+<section className="contact-section">
+  <div className="contact-container">
+    <h2>Contact us.</h2>
+    <p className="contact-subtitle">
+      Need help, have an inquiry or want to share some feedback? 
+      Fill out the form below and we'll be in touch soon.
+    </p>
+
+    <form
+  className="contact-form"
+  onSubmit={(e) => {
+    e.preventDefault();
+
+    emailjs
+      .sendForm(
+        "service_i28iina",
+        "template_19csb3x",
+        e.target,
+        "ZwG_bsK2sFl2SUQUk"
+      )
+      .then(() => {
+        alert("Message sent successfully!");
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("Failed to send message");
+      });
+
+    e.target.reset();
+  }}
+>
+  <div className="contact-row">
+    <input type="text" name="first_name" placeholder="First name" required />
+    <input type="text" name="last_name" placeholder="Last name" required />
+  </div>
+
+  <input type="email" name="email" placeholder="Email" required />
+
+  <textarea
+    name="message"
+    placeholder="Message"
+    rows="5"
+    required
+  />
+
+  <button type="submit" className="contact-btn">
+    Send message →
+  </button>
+</form>
   </div>
 </section>
       </div>
