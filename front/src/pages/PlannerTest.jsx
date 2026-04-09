@@ -136,6 +136,7 @@ export default function PlannerTest() {
   const [showArchived, setShowArchived] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [threadTitle, setThreadTitle] = useState("New trip");
 
   const messageRequestRef = useRef(0);
   const tripRequestRef = useRef(0);
@@ -379,6 +380,7 @@ const filteredArchivedThreads = useMemo(() => {
       setDeletingChatId(null);
     }
   };
+  
 
   const handleSendMessage = async (event) => {
     // Send a message and refresh the visible trip cache from the response.

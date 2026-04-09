@@ -1,5 +1,9 @@
 import { formatCategory, formatLocation, priceTierLabel } from "../../utils/placeUtils";
 import { useTranslation } from "react-i18next";
+import emptyHeart from "../../assets/eHeart.svg";
+import redHeart from "../../assets/fHeart.svg";
+import closeIcon from "../../assets/X.svg";
+
 
 function renderStars(rating) {
   if (!rating) return null;
@@ -36,8 +40,33 @@ export default function PlaceDetailModal({
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+
+        {/* 📸 Фото + иконки */}
         {place.photo_url && (
-          <img className={styles.modalPhoto} src={place.photo_url} alt={place.name} />
+          <div className={styles.photoWrapper}>
+            <img
+              className={styles.modalPhoto}
+              src={place.photo_url}
+              alt={place.name}
+            />
+
+            {/* ❤️ + ❌ */}
+            <div className={styles.iconGroup}>
+              <img
+                src={place.is_must_visit ? redHeart : emptyHeart}
+                alt="wishlist"
+                className={styles.iconBtn}
+                onClick={onToggleMustVisit}
+              />
+
+              <img
+                src={closeIcon}
+                alt="close"
+                className={styles.iconBtn}
+                onClick={onClose}
+              />
+            </div>
+          </div>
         )}
 
         <div className={styles.modalContent}>
@@ -54,6 +83,7 @@ export default function PlaceDetailModal({
           <p><strong>{t("inspiration.card.location")}</strong> {formatLocation(place)}</p>
 
           {place.opening_hours?.openNow !== undefined && (
+
             <p><strong>{t("inspiration.card.status")}</strong> {place.opening_hours.openNow ? t("inspiration.card.openNow") : t("inspiration.card.closed")}</p>
           )}
 
@@ -66,6 +96,7 @@ export default function PlaceDetailModal({
             </button>
           </div>
 
+          {/* 💬 Комментарии */}
           <div className={styles.commentsSection}>
             <h3>
               {t("inspiration.card.comments")}
@@ -77,9 +108,14 @@ export default function PlaceDetailModal({
 
               {!loadingComments && comments.length === 0 && (
                 <div className={styles.emptyComments}>
-                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M8 12h8M8 8h8M8 16h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <path
+                      d="M8 12h8M8 8h8M8 16h4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
                   </svg>
                   <span>{t("inspiration.card.noCommentsYet")}</span>
                   <span style={{ fontSize: "12px", marginTop: "4px" }}>
@@ -99,7 +135,9 @@ export default function PlaceDetailModal({
                       <span className={styles.tripAdvisorBadge}>✓ {t("inspiration.card.tripAdvisor")}</span>
                     )}
                   </div>
+
                   <p>{comment.comment_text}</p>
+
                   {comment.created_at && (
                     <small className={styles.commentDate}>
                       {new Date(comment.created_at).toLocaleDateString("en-US", {
@@ -137,8 +175,8 @@ export default function PlaceDetailModal({
             )}
           </div>
         </div>
-
         <button className={styles.modalClose} onClick={onClose}>{t("inspiration.card.close")}</button>
+
       </div>
     </div>
   );

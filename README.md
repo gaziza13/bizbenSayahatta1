@@ -102,6 +102,8 @@ Backend runs at **http://127.0.0.1:8000/**.
    ```bash
    npm install
    npm install react-simple-maps --legacy-peer-deps   # if needed
+   npm install react-i18next i18next                  
+   npm install @emailjs/browser                       # if needed
    npm install react-leaflet leaflet                  # if using maps
    ```
 

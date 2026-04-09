@@ -82,7 +82,7 @@ export default function Map() {
     });
     setIsEditModalOpen(true);
   };
-
+  
   const saveEditPlace = async (e) => {
     e.preventDefault();
     if (!editingPlace.city || !editingPlace.country) return;
