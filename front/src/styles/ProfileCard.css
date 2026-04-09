@@ -505,25 +505,21 @@
   border-radius: 12px;
   cursor: pointer;
   font-weight: 500;
+  background: #efeff0 !important;
+  color: #111827 !important;
   transition: background 0.2s ease;
-}
-
-/* CANCEL */
-.cancel-btn {
-  background: #e5e7eb;
-  color: #111827;
 }
 
 .modal-actions .cancel-btn:hover {
   background: #9ca3af !important;
+  color: white !important;
 }
 
 /* ADD TRIP */
 
-
 .modal-actions .save-btn:hover {
   background: #9333ea !important;
-  color: white;
+  color: white !important;
 }
 
 .remove-avatar {
@@ -538,9 +534,9 @@
   margin: 0 auto;
 }
 
-/* вариант как Cancel */
+
 .remove-avatar {
-  background: #e5e7eb;
+  background: #efeff0;
   color: #111827;
 }
 
@@ -574,8 +570,6 @@
     width: 92vw;
   }
 }
-
-/* advisor block */
 
 .advisor-block {
   margin-top: 12px;
