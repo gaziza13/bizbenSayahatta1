@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo } from "react";
 import { MapContainer, Marker, Popup, Polyline, TileLayer, useMap } from "react-leaflet";
+import { useTranslation } from "react-i18next";
 import L from "leaflet";
 
 const fallbackCenter = [48.8566, 2.3522];
@@ -30,6 +31,7 @@ function FitRouteBounds({ points }) {
 }
 
 export default function TravelPlannerMap({ plan, isOpen }) {
+  const { t } = useTranslation();
   const route = useMemo(() => plan?.route || [], [plan]);
 
   const hasRoute = route.some((day) => (day.places || []).length > 0);
@@ -65,12 +67,12 @@ export default function TravelPlannerMap({ plan, isOpen }) {
       <div className="trip-map-shell">
         {isOpen ? (
           <>
-            <p className="map-fallback">Map unavailable</p>
+            <p className="map-fallback">{t("chat.mapUnavailable")}</p>
             <div className="text-directions">
               {(plan?.itinerary || []).map((day) => (
                 <div key={day.day} className="text-direction-day">
                   <span className="day-dot" style={{ backgroundColor: day.color || "#E53E3E" }} />
-                  <strong>Day {day.day}</strong>
+                  <strong>{t("chat.day")} {day.day}</strong>
                   <span>{(day.stops || []).map((stop) => stop.name).join(" -> ")}</span>
                 </div>
               ))}

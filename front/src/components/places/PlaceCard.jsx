@@ -2,6 +2,7 @@ import { formatCategory, formatLocation, priceTierLabel } from "../../utils/plac
 import emptyHeart from "../../assets/emptyHeart.svg";
 import redHeart from "../../assets/redHeart.svg";
 import styles from "../../styles/PlaceCard.module.css";
+import { useTranslation } from "react-i18next";
 
 export default function PlaceCard({
   place,
@@ -13,6 +14,7 @@ export default function PlaceCard({
   const isFavorited = isFavoritedProp !== undefined ? isFavoritedProp : place?.is_must_visit;
   const isWishlist = variant === "wishlist";
   const location = isWishlist ? `${place.city || ""}${place.city && place.country ? ", " : ""}${place.country || ""}` : formatLocation(place);
+  const { t } = useTranslation(); 
 
   return (
     <div
@@ -32,7 +34,7 @@ export default function PlaceCard({
             event.stopPropagation();
             onToggleFavorite?.();
           }}
-          aria-label={isFavorited ? "Remove from wishlist" : "Add to wishlist"}
+          aria-label={isFavorited ? t("inspiration.card.removeFromWishlist") : t("inspiration.card.addToWishlist")}
         >
           <img
             src={isFavorited ? redHeart : emptyHeart}
@@ -52,7 +54,7 @@ export default function PlaceCard({
 
       <div className={styles.content}>
         <div className={styles.cardHeader}>
-          {!isWishlist ? <span className={styles.category}>{formatCategory(place.category)}uu</span> : <span />}
+          {!isWishlist ? <span className={styles.category}>{formatCategory(place.category)}</span> : <span />}
           <div className={styles.metaRow}>
             {place.rating ? <span className={styles.rating}>★ {place.rating}</span> : null}
             <span className={styles.priceTag}>{priceTierLabel(place.price_level)}</span>
@@ -70,8 +72,8 @@ export default function PlaceCard({
               event.stopPropagation();
               onOpen?.();
             }}
-          >
-            View Details →
+          > 
+          {t("inspiration.card.viewDetails")} →
           </button>
         ) : null}
       </div>

@@ -14,13 +14,22 @@ from .trip_planner import build_trip_plan
 
 
 DAY_COLORS = ["#E53E3E", "#DD6B20", "#D69E2E", "#38A169", "#3182CE", "#805AD5"]
-DAY_EMOJIS = ["🔴", "🟠", "🟡", "🟢", "🔵", "🟣"]
+DAY_EMOJIS = ["🔴", "🟠", "🟡", "🟢", "🔵", "🟣", "⚪️", "⚫️", "🟥", "🟧", "🟨", "🟩", "🟦", "🟪", "🟫"]
+
 STYLE_KEYWORDS = {
     "adventure": {"adventure", "hiking", "active", "outdoor", "explore"},
     "relaxation": {"relax", "relaxing", "relaxation", "spa", "beach", "chill"},
     "culture": {"culture", "cultural", "museum", "history", "historic", "art"},
     "food": {"food", "foodie", "restaurant", "cuisine", "local food", "street food"},
     "mix": {"mix", "mixed", "everything", "bit of everything"},
+}
+
+HOTEL_STYLE_KEYWORDS = {
+    "active": {"active", "hiking", "mountain", "nature", "outdoor", "trekking", "climbing"},
+    "relaxed": {"relax", "relaxing", "relaxation", "spa", "beach", "chill", "peaceful"},
+    "cultural": {"culture", "cultural", "museum", "history", "historic", "art", "city center"},
+    "budget": {"budget", "cheap", "affordable", "low cost", "economical"},
+    "family": {"family", "kids", "children", "child-friendly", "family rooms"},
 }
 
 TRAVEL_TYPE_QUESTIONS = {
@@ -45,6 +54,17 @@ class TripRequirements:
     has_kids: bool = False
     kids_age_band: str = ""
     citizenship: str = ""
+
+@dataclass
+class HotelSearchParams:
+    """Parameters extracted from user message for hotel search."""
+    city: Optional[str] = None
+    checkin: Optional[str] = None
+    checkout: Optional[str] = None
+    budget_per_night: Optional[float] = None
+    adults: Optional[int] = None
+    children: Optional[int] = None
+    travel_style: Optional[str] = None
 
 
 def _normalize_text(value: str | None) -> str:
@@ -184,6 +204,147 @@ def _extract_citizenship(text: str, fallback: str = "") -> str:
         "turkish": "Turkey",
     }
     return mapping.get(match.group(1), fallback)
+
+def _extract_hotel_dates(text: str) -> tuple[Optional[str], Optional[str]]:
+    """
+    Extract check-in and check-out dates from user message.
+    Returns (checkin, checkout) as YYYY-MM-DD strings, or (None, None) if not found.
+    """
+    lowered = text.lower()
+
+    # Pattern 1: Explicit ISO dates (2025-06-01 to 2025-06-05)
+    date_match = re.search(
+        r"(\d{4}-\d{2}-\d{2})\s*(?:to|-)\s*(\d{4}-\d{2}-\d{2})",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if date_match:
+        return date_match.group(1), date_match.group(2)
+
+    # Pattern 2: Relative dates (next Friday, tomorrow, etc.)
+    # For simplicity, we'll return None for these - LLM can handle relative references
+    # A more advanced implementation could use dateparser library
+
+    # Pattern 3: Duration-based (5 days, 3 nights) - infer from context
+    duration_match = re.search(r"(\d{1,2})\s*(day|days|night|nights)\b", lowered)
+    if duration_match:
+        days = int(duration_match.group(1))
+        # Default to today + 1 for checkin, then + days for checkout
+        # In production, you'd want to use actual dates
+        from datetime import timedelta
+        today = date.today()
+        checkin = today + timedelta(days=1)
+        checkout = checkin + timedelta(days=days)
+        return checkin.isoformat(), checkout.isoformat()
+
+    return None, None
+
+
+def _extract_hotel_budget(text: str, total_budget: Optional[int] = None, duration_days: Optional[int] = None) -> Optional[float]:
+    """
+    Extract hotel budget per night from user message.
+
+    Budget logic:
+    - If user says "$1000 for 5 days" → daily budget = $200
+    - Hotel budget should be ~40-60% of daily budget
+    - So budget_per_night = daily_budget * 0.5 ( midpoint)
+    """
+    # First try to extract explicit hotel budget
+    hotel_budget_match = re.search(
+        r"(hotel|accommodation|stay|sleep)[^0-9]{0,20}(\$?\s*(\d{2,4}))",
+        text.lower(),
+        flags=re.IGNORECASE,
+    )
+    if hotel_budget_match:
+        return float(hotel_budget_match.group(3))
+
+    # Use total budget and duration if provided
+    if total_budget and duration_days:
+        daily_budget = total_budget / duration_days
+        # Hotel should be ~50% of daily budget (leave room for food, activities)
+        return daily_budget * 0.5
+
+    # Extract from general budget mention
+    budget = _extract_budget(text)
+    if budget:
+        # Assume it's total budget, need duration to calculate per-night
+        # Default to 3 days if not specified
+        days = duration_days or 3
+        daily = budget / days
+        return daily * 0.5
+
+    return None
+
+
+def _extract_hotel_travel_style(text: str, fallback: str = "") -> str:
+    """
+    Extract travel style specifically for hotel search.
+    Maps user preferences to hotel location/amenity preferences.
+    """
+    lowered = text.lower()
+    for style, keywords in HOTEL_STYLE_KEYWORDS.items():
+        if any(keyword in lowered for keyword in keywords):
+            return style
+    return fallback
+
+
+def extract_hotel_search_params(
+    user_message: str,
+    user_profile: Optional[dict] = None,
+    chat_history: Optional[list] = None,
+    fallback_city: str = "",
+    fallback_budget: Optional[float] = None,
+    fallback_duration: Optional[int] = None,
+) -> HotelSearchParams:
+    """
+    Extract hotel search parameters from user message + profile context.
+
+    Returns HotelSearchParams with:
+    - city: destination city from message or trip context
+    - checkin: parse from message ("next Friday", "June 5", etc.)
+    - checkout: parse end date or checkin + duration
+    - budget_per_night: total_budget / trip_days * 0.5
+    - adults: number of adults, default 1
+    - children: 0 unless user mentioned kids
+    - travel_style: from user profile or message keywords
+
+    Returns None for any field that cannot be determined.
+    """
+    # Extract destination city
+    city = _extract_destination(user_message, fallback_city=fallback_city)
+
+    # Extract dates
+    checkin, checkout = _extract_hotel_dates(user_message)
+
+    # Extract budget
+    total_budget = _extract_budget(user_message) or fallback_budget
+    duration_days = _extract_duration_days(user_message) or fallback_duration
+    budget_per_night = _extract_hotel_budget(user_message, total_budget, duration_days)
+
+    # Extract travelers
+    travelers = _extract_travelers(user_message)
+    adults = travelers if travelers else 1
+    _, has_kids = _extract_traveler_type(user_message)
+    children = 0
+    if has_kids:
+        # Count kids from message
+        child_mentions = len(re.findall(r"(\d+)-year-old|kids|children|child|toddler|teen", user_message.lower()))
+        children = max(1, child_mentions) if child_mentions else 1
+
+    # Extract travel style
+    travel_style = _extract_hotel_travel_style(user_message)
+    if not travel_style and user_profile:
+        travel_style = user_profile.get("travel_style", "")
+
+    return HotelSearchParams(
+        city=city or None,
+        checkin=checkin,
+        checkout=checkout,
+        budget_per_night=budget_per_night,
+        adults=adults,
+        children=children,
+        travel_style=travel_style or None,
+    )
 
 
 def collect_trip_requirements(

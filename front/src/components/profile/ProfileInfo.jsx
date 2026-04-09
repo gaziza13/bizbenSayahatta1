@@ -6,7 +6,13 @@ export default function ProfileInfo({
   email, username, travelStyle, user,
   advisorStatus, advisorSuccess, latestApplication,
   privacySettings, privacySaving, onPrivacyChange,
-  onOpenAdvisorModal, onLogout,
+  onOpenAdvisorModal, onLogout, showIdentity = true,
+  showAdvisorSection = true,
+  showTravelerBadgeSection = true,
+  showPrivacySection = true,
+  showEmail = showIdentity,
+  showUsername = showIdentity,
+  emailLabel,
 }) {
   const { t } = useTranslation();
   const styleKeyMap = {
@@ -20,8 +26,8 @@ export default function ProfileInfo({
 
   return (
     <div className="info">
-      <div className="style"><span>{t("profile.email")}:</span> <span className="email">{email}</span></div>
-      <div className="style"><span>{t("profile.username")}:</span> <span className="username">{username}</span></div>
+      {showEmail ? <div className="style"><span>{emailLabel || t("profile.email")}:</span> <span className="email">{email}</span></div> : null}
+      {showUsername ? <div className="style"><span>{t("profile.username")}:</span> <span className="username">{username}</span></div> : null}
       <div className="style"><span>{t("profile.travelStyle")}:</span><strong>{t(`profile.styles.${styleKeyMap[travelStyle]}`, { defaultValue: travelStyle })}</strong></div>
       <div className="style"><span>{t("profile.role")}:</span>
       
@@ -36,79 +42,85 @@ export default function ProfileInfo({
         <p className="advisor-note">{t("profile.managerNote")}: {latestApplication.review_reason}</p>
       )}
 
-      {user?.role !== "TRIPADVISOR" ? (
-        <button
-          className="advisor-cta"
-          disabled={advisorStatus.code === "PENDING"}
-          onClick={onOpenAdvisorModal}
-        >
-          {advisorStatus.code === "PENDING" ? t("profile.applicationPending") : t("profile.becomeAdvisor")}
-        </button>
-      ) : (
-        <div className="advisor-panel">
-          <strong>{t("profile.advisorToolsActive")}</strong>
-          <div className="level">
-            <span>{t("profile.checkTripStatus")}</span>
-            <Link to="/tripstatus"><button>{t("profile.checkStatus")}</button></Link>
+      {showAdvisorSection ? (
+        user?.role !== "TRIPADVISOR" ? (
+          <button
+            className="advisor-cta"
+            disabled={advisorStatus.code === "PENDING"}
+            onClick={onOpenAdvisorModal}
+          >
+            {advisorStatus.code === "PENDING" ? t("profile.applicationPending") : t("profile.becomeAdvisor")}
+          </button>
+        ) : (
+          <div className="advisor-panel">
+            <strong>{t("profile.advisorToolsActive")}</strong>
+            <div className="level">
+              <span>{t("profile.checkTripStatus")}</span>
+              <Link to="/tripstatus"><button>{t("profile.checkStatus")}</button></Link>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      ) : null}
 
       {(user?.role === "MANAGER" || user?.role === "ADMIN") && (
         <Link className="plan-link" to="/manager/advisors">{t("profile.openManagerApprovals")}</Link>
       )}
 
-      <div className="advisor-panel">
-        <div className="level">
-          <span>{t("profile.travelerBadge")}:</span>
-          <Link to="/map">
-            <button>{t("profile.upgradeLevel")} <img src={cupIcon} alt={t("common.cup")} width="15" height="15" /></button>
-          </Link>
+      {showTravelerBadgeSection ? (
+        <div className="advisor-panel">
+          <div className="level">
+            <span>{t("profile.travelerBadge")}:</span>
+            <Link to="/map">
+              <button>{t("profile.upgradeLevel")} <img src={cupIcon} alt={t("common.cup")} width="15" height="15" /></button>
+            </Link>
+          </div>
         </div>
-      </div>
+      ) : null}
 
-      <div className="privacy-panel">
-        <div className="privacy-header">
-          <strong>{t("profile.mapVisibility")}</strong>
-          <span>{t("profile.mapVisibilityDescription")}</span>
+      {showPrivacySection ? (
+        <div className="privacy-panel">
+          <div className="privacy-header">
+            <strong>{t("profile.mapVisibility")}</strong>
+            <span>{t("profile.mapVisibilityDescription")}</span>
+          </div>
+          <label className="privacy-option">
+            <input
+              type="checkbox"
+              checked={Boolean(privacySettings?.share_map)}
+              disabled={privacySaving}
+              onChange={(e) => onPrivacyChange("share_map", e.target.checked)}
+            />
+            <div>
+              <span className="privacy-option-title">{t("profile.shareMapPoints")}</span>
+              <span className="privacy-option-note">{t("profile.shareMapPointsNote")}</span>
+            </div>
+          </label>
+          <label className="privacy-option">
+            <input
+              type="checkbox"
+              checked={Boolean(privacySettings?.share_visited_places)}
+              disabled={privacySaving}
+              onChange={(e) => onPrivacyChange("share_visited_places", e.target.checked)}
+            />
+            <div>
+              <span className="privacy-option-title">{t("profile.shareVisitedPlaces")}</span>
+              <span className="privacy-option-note">{t("profile.shareVisitedPlacesNote")}</span>
+            </div>
+          </label>
+          <label className="privacy-option">
+            <input
+              type="checkbox"
+              checked={Boolean(privacySettings?.share_badges)}
+              disabled={privacySaving}
+              onChange={(e) => onPrivacyChange("share_badges", e.target.checked)}
+            />
+            <div>
+              <span className="privacy-option-title">{t("profile.shareBadges")}</span>
+              <span className="privacy-option-note">{t("profile.shareBadgesNote")}</span>
+            </div>
+          </label>
         </div>
-        <label className="privacy-option">
-          <input
-            type="checkbox"
-            checked={Boolean(privacySettings?.share_map)}
-            disabled={privacySaving}
-            onChange={(e) => onPrivacyChange("share_map", e.target.checked)}
-          />
-          <div>
-            <span className="privacy-option-title">{t("profile.shareMapPoints")}</span>
-            <span className="privacy-option-note">{t("profile.shareMapPointsNote")}</span>
-          </div>
-        </label>
-        <label className="privacy-option">
-          <input
-            type="checkbox"
-            checked={Boolean(privacySettings?.share_visited_places)}
-            disabled={privacySaving}
-            onChange={(e) => onPrivacyChange("share_visited_places", e.target.checked)}
-          />
-          <div>
-            <span className="privacy-option-title">{t("profile.shareVisitedPlaces")}</span>
-            <span className="privacy-option-note">{t("profile.shareVisitedPlacesNote")}</span>
-          </div>
-        </label>
-        <label className="privacy-option">
-          <input
-            type="checkbox"
-            checked={Boolean(privacySettings?.share_badges)}
-            disabled={privacySaving}
-            onChange={(e) => onPrivacyChange("share_badges", e.target.checked)}
-          />
-          <div>
-            <span className="privacy-option-title">{t("profile.shareBadges")}</span>
-            <span className="privacy-option-note">{t("profile.shareBadgesNote")}</span>
-          </div>
-        </label>
-      </div>
+      ) : null}
 
       <button className="logout" onClick={onLogout}>{t("profile.logout")}</button>
     </div>

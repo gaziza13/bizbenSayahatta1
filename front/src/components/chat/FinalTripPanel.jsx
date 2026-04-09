@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 const FALLBACK_DAY_COLORS = ["#E53E3E", "#DD6B20", "#D69E2E", "#38A169", "#3182CE", "#805AD5"];
 
 function getDayColor(day, index) {
@@ -6,11 +8,13 @@ function getDayColor(day, index) {
 
 /** Render the persisted per-chat itinerary grouped by day. */
 export default function FinalTripPanel({ trip, loading }) {
+  const { t } = useTranslation();
+
   if (loading) {
     return (
       <div className="final-trip-placeholder">
-        <p className="right-panel-label">Final Trip</p>
-        <div className="trip-loading-card">Loading this chat&apos;s trip...</div>
+        <p className="right-panel-label">{t("chat.finalTrip")}</p> 
+        <div className="trip-loading-card">{t("chat.loadingThisChatSTrip")}</div>
       </div>
     );
   }
@@ -18,9 +22,9 @@ export default function FinalTripPanel({ trip, loading }) {
   if (!trip?.itinerary?.length) {
     return (
       <div className="final-trip-placeholder">
-        <p className="right-panel-label">Final Trip</p>
+        <p className="right-panel-label">{t("chat.finalTrip")}</p>
         <div className="trip-empty-card">
-          Your trip summary will appear here as we plan it
+          {t("chat.yourTripSummaryWillAppearHereAsWePlanIt")}
         </div>
       </div>
     );
@@ -30,8 +34,8 @@ export default function FinalTripPanel({ trip, loading }) {
     <section className="final-trip-section">
       <div className="right-panel-heading">
         <div>
-          <p className="right-panel-label">Final Trip</p>
-          <h3>{trip.city || "Planned route"}</h3>
+          <p className="right-panel-label">{t("chat.finalTrip")}</p>
+          <h3>{trip.city || t("chat.plannedRoute")}</h3>
         </div>
       </div>
 
@@ -44,16 +48,16 @@ export default function FinalTripPanel({ trip, loading }) {
                   className="day-dot"
                   style={{ backgroundColor: getDayColor(day, index) }}
                 />
-                Day {day.day}
+                {t("chat.day")} {day.day}
               </span>
-              <span className="trip-day-title">{day.summary || "Plan in progress"}</span>
+              <span className="trip-day-title">{day.summary || t("chat.planInProgress")}</span>
             </summary>
             <div className="trip-day-stops">
               {(day.stops || []).map((stop, stopIndex) => (
                 <div key={`${day.day}-${stopIndex}-${stop.name}`} className="trip-stop-row">
                   <div>
                     <strong>{stop.name}</strong>
-                    <p>{stop.address || stop.category || "Details coming soon"}</p>
+                    <p>{stop.address || stop.category || t("chat.detailsComingSoon")}</p>
                   </div>
                 </div>
               ))}
@@ -64,4 +68,3 @@ export default function FinalTripPanel({ trip, loading }) {
     </section>
   );
 }
-

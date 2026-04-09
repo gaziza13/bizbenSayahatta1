@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { getSharedMaps, getUserMap } from "../api/map";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import "../styles/SharedMaps.css";
 
 export default function SharedMaps() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [users, setUsers] = useState([]);
@@ -29,28 +31,28 @@ export default function SharedMaps() {
       .then((data) => setMapData(data))
       .catch((err) => {
         if (err.response?.status === 403)
-          setError("The user does not share the map");
+          setError(t("sharedMaps.userDoesNotShare"));
         else if (err.response?.status === 404)
-          setError("The user was not found");
-        else setError("Error loading the map");
+          setError(t("sharedMaps.userNotFound"));
+        else setError(t("sharedMaps.errorLoadingMap"));
         setMapData(null);
       })
       .finally(() => setLoadingMap(false));
-  }, [selectedUser]);
+  }, [selectedUser, t]);
 
-  if (loadingUsers) return <div>Loading users...</div>;
-  if (!users.length) return <div>No users sharing maps</div>;
+  if (loadingUsers) return <div>{t("sharedMaps.loadingUsers")}</div>;
+  if (!users.length) return <div>{t("sharedMaps.noUsers")}</div>;
 
   return (
     <div className="shared-maps-container">
       {/* Back button */}
       <div className="back-button" onClick={() => navigate("/map")}>
-        ← Back to map
+        ← {t("sharedMaps.backToMap")}
       </div>
 
       {/* Users list */}
       <div className="users-panel">
-        <h2>Public Maps</h2>
+        <h2>{t("sharedMaps.publicMaps")}</h2>
         {users.map((user) => (
           <div
             key={user.id}
@@ -71,9 +73,9 @@ export default function SharedMaps() {
       <div className="map-panel">
         {selectedUser && (
           <>
-            <h3>{selectedUser.username} — map</h3>
+            <h3>{selectedUser.username} — {t("sharedMaps.map")}</h3>
 
-            {loadingMap && <div>Loading the map...</div>}
+            {loadingMap && <div>{t("sharedMaps.loadingMap")}</div>}
             {error && <div className="error-text">{error}</div>}
 
             {mapData && mapData.map_places.length > 0 && (
@@ -107,14 +109,14 @@ export default function SharedMaps() {
             )}
 
             {mapData && mapData.map_places.length === 0 && (
-              <div>No places to display</div>
+              <div>{t("sharedMaps.noPlaces")}</div>
             )}
           </>
         )}
 
         {!selectedUser && (
           <div className="placeholder-text">
-            Select a user to view their map
+            {t("sharedMaps.selectUser")}
           </div>
         )}
       </div>

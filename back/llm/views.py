@@ -19,8 +19,10 @@ from .models import ChatMessage, ChatThread, ChatEntry, FinalTrip
 from .services.openai_service import ask_travel_ai, polish_trip_plan
 from .services.final_trip import sync_final_trip
 from .services.travel_chat import (
+    HotelSearchParams,
     build_missing_details_response,
     collect_trip_requirements,
+    extract_hotel_search_params,
     generate_trip_payload,
     get_missing_requirements,
 )
@@ -29,7 +31,7 @@ from places.models import Place
 from users.permissions import IsActiveAndNotBlocked
 from users.models import UserPreferences
 from users.services import sync_user_travel_profile
-
+from .services.hotel_cache import get_hotels_cached
 
 MAX_CHAT_CONTEXT_PLACES = 8
 TOKENS_PER_CHAT = 1
@@ -131,6 +133,56 @@ def _build_places_context_for_city(city: str) -> str:
     return "\n".join(lines)
 
 
+def _build_hotel_context_block(hotels: list, search_params: HotelSearchParams) -> str:
+    """
+    Build a formatted hotel context block for LLM injection.
+
+    Format:
+    HOTEL OPTIONS FOR {CITY} ({CHECKIN} to {CHECKOUT}):
+    Budget: ${price_min}-${price_max}/night
+
+    Option 1: {name} — ${price}/night — ⭐{rating}/10
+      Address: {address} | {distance_to_center_km}km from center
+      Highlights: {highlights joined by ", "}
+      Cancellation: {cancellation_policy}
+      Book: {booking_url}
+    """
+    if not hotels:
+        return ""
+
+    lines = []
+    city = search_params.city or "Unknown city"
+    checkin = search_params.checkin or "TBD"
+    checkout = search_params.checkout or "TBD"
+    budget = search_params.budget_per_night or 100
+
+    lines.append(f"HOTEL OPTIONS FOR {city} ({checkin} to {checkout}):")
+    lines.append(f"Budget: ${int(budget * 0.4)}-${int(budget * 0.9)}/night")
+    lines.append("")
+
+    for i, hotel in enumerate(hotels[:5], 1):
+        name = hotel.get("name", "Unknown Hotel")
+        price = hotel.get("price_per_night", 0)
+        rating = hotel.get("rating", 0)
+        address = hotel.get("address", "Address not available")
+        distance = hotel.get("distance_to_center_km", 0)
+        highlights = hotel.get("highlights", [])
+        cancellation = hotel.get("cancellation_policy", "Contact for details")
+        booking_url = hotel.get("booking_url", "")
+
+        highlights_str = ", ".join(highlights) if highlights else "No specific highlights"
+
+        lines.append(f"Option {i}: {name} — ${price}/night — ⭐{rating}/10")
+        lines.append(f"  Address: {address} | {distance}km from center")
+        lines.append(f"  Highlights: {highlights_str}")
+        lines.append(f"  Cancellation: {cancellation}")
+        lines.append(f"  Book: {booking_url}")
+        lines.append("")
+
+    lines.append("(max 5 hotels shown)")
+    return "\n".join(lines)
+
+
 def _recent_history_text(thread) -> str:
     entries = list(ChatEntry.objects.filter(thread=thread).order_by("created_at")[:10])
     return "\n".join(f"{entry.role}: {entry.content}" for entry in entries[-6:])
@@ -194,6 +246,55 @@ def _generate_thread_trip_response(thread, user, message: str):
         }
 
     return None
+
+
+def _get_hotel_context_for_chat(user_message: str, thread=None, user=None) -> str:
+    """
+    Fetch hotel context for the chat based on user message.
+    Returns formatted hotel block or empty string if no hotels found.
+    """
+
+    # Build fallback context from thread or user profile
+    fallback_city = ""
+    fallback_budget = None
+    fallback_duration = None
+
+    if thread:
+        fallback_city = thread.city or ""
+        if thread.plan_json:
+            fallback_duration = thread.plan_json.get("days_requested") or thread.plan_json.get("days_generated")
+
+    if user and hasattr(user, "preferences"):
+        fallback_budget = user.preferences.budget if user.preferences.budget else None
+
+    # Extract hotel search params from message
+    search_params = extract_hotel_search_params(
+        user_message=user_message,
+        user_profile={"travel_style": getattr(user.preferences, "travel_style", "") if user and hasattr(user, "preferences") else {}},
+        fallback_city=fallback_city,
+        fallback_budget=fallback_budget,
+        fallback_duration=fallback_duration,
+    )
+
+    # Need at least city and dates to search hotels
+    if not search_params.city or not search_params.checkin or not search_params.checkout:
+        return ""
+
+    # Fetch hotels (uses cache if available)
+    hotels = get_hotels_cached(
+        city_name=search_params.city,
+        checkin=search_params.checkin,
+        checkout=search_params.checkout,
+        budget_per_night=search_params.budget_per_night or 100,
+        adults=search_params.adults or 1,
+        children=search_params.children or 0,
+        travel_style=search_params.travel_style,
+    )
+
+    if hotels:
+        return _build_hotel_context_block(hotels, search_params)
+
+    return ""
 
 
 class TravelChatView(APIView):

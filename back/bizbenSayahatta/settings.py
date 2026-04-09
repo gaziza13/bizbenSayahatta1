@@ -22,10 +22,8 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 DATABASE_URL = (os.getenv("DATABASE_URL") or "").strip()
-if (DATABASE_URL.startswith("b'") and DATABASE_URL.endswith("'")) or (
-    DATABASE_URL.startswith('b"') and DATABASE_URL.endswith('"')
-):
-    DATABASE_URL = DATABASE_URL[2:-1]
+RAPIDAPI_HOST = os.getenv("VITE_RAPIDAPI_HOST", "booking-com15.p.rapidapi.com")
+RAPIDAPI_KEY = os.getenv("VITE_RAPIDAPI_KEY", "")
 
 # Stripe (Payment Links + webhooks). Never commit real keys.
 STRIPE_SECRET_KEY = (os.getenv("STRIPE_SECRET_KEY") or "").strip()
@@ -128,12 +126,21 @@ DATABASES = {
     "default": dj_database_url.parse(
         DATABASE_URL,
         conn_max_age=600,
-        
+        ssl_require=True,
     )
 }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
+
+# Cache configuration for hotel data and other caching needs
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+        "TIMEOUT": 3600,
+    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -232,3 +239,5 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
+
+

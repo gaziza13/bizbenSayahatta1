@@ -11,6 +11,7 @@ from .views import (
     UserMapPlaceDeleteAPIView,
     UserPublicMapAPIView,
     UsersWithPublicMapListAPIView,
+    HotelsSearchAPIView,
 )
 
 urlpatterns = [
@@ -29,4 +30,5 @@ urlpatterns = [
     path("map-places/<int:place_id>/", UserMapPlaceDeleteAPIView.as_view(), name="map-place-delete"),
     path("users/shared-maps/", UsersWithPublicMapListAPIView.as_view(), name="users-with-public-map"),
     path("users/<int:user_id>/map/", UserPublicMapAPIView.as_view(), name="user-public-map"),
+    path("hotels/search/", HotelsSearchAPIView.as_view(), name="hotels-search"),
 ]

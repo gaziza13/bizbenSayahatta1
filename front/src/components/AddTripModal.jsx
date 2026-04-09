@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
+import { useTranslation } from "react-i18next";
 
 export default function AddTripModal({
   isOpen,
@@ -7,6 +8,7 @@ export default function AddTripModal({
   tripCategories,
   onTripCreated,
 }) {
+  const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState("");
@@ -84,7 +86,7 @@ export default function AddTripModal({
 
     const firstCategoryId = tripCategories?.[0]?.id;
     if (!firstCategoryId) {
-      setSubmitError("No categories available. Please try again later.");
+      setSubmitError(t("advisorTrips.noCategoriesAvailable"));
       return;
     }
 
@@ -111,15 +113,15 @@ export default function AddTripModal({
 
       const createRes = await api.post("marketplace/advisor/trips/", createPayload);
       const createdId = createRes.data?.id;
-      if (!createdId) throw new Error("Trip creation failed.");
+      if (!createdId) throw new Error(t("advisorTrips.tripCreationFailed"));
       await api.post(`marketplace/advisor/trips/${createdId}/submit/`);
 
-      setSubmitSuccess("Trip submitted for review. Status: PENDING.");
+      setSubmitSuccess(t("advisorTrips.tripSubmittedPending"));
       resetForm();
       if (onTripCreated) await onTripCreated();
     } catch (err) {
       const responseData = err?.response?.data;
-      const detail = responseData?.detail || err?.userMessage || "Failed to submit trip.";
+      const detail = responseData?.detail || err?.userMessage || t("advisorTrips.failedToSubmitTrip");
       setSubmitError(detail);
     } finally {
       setSubmitting(false);
@@ -130,7 +132,7 @@ export default function AddTripModal({
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>Add New Trip</h2>
+          <h2>{t("advisorTrips.addNewTrip")}</h2>
           <span className="close-btn" onClick={handleClose}>✕</span>
         </div>
 
@@ -141,7 +143,7 @@ export default function AddTripModal({
             <input
               type="text"
               name="title"
-              placeholder="Trip Name"
+              placeholder={t("advisorTrips.tripName")}
               value={newTrip.title}
               onChange={handleChange}
               required
@@ -150,7 +152,7 @@ export default function AddTripModal({
             <input
               type="text"
               name="place"
-              placeholder="Place"
+              placeholder={t("advisorTrips.place")}
               value={newTrip.place}
               onChange={handleChange}
               required
@@ -174,14 +176,14 @@ export default function AddTripModal({
             <input
               type="number"
               name="budget"
-              placeholder="Budget"
+              placeholder={t("advisorTrips.budget")}
               value={newTrip.budget}
               onChange={handleChange}
             />
 
             <textarea
               name="comment"
-              placeholder="Additional information"
+              placeholder={t("advisorTrips.additionalInformation")}
               rows={3}
               value={newTrip.comment}
               onChange={handleChange}
@@ -193,10 +195,10 @@ export default function AddTripModal({
 
           <div className="modal-actions">
             <button type="button" className="cancel-btn" onClick={handleClose}>
-              Cancel
+              {t("advisorTrips.cancel")}
             </button>
             <button type="submit" className="save-btn" disabled={submitting}>
-              {submitting ? "Submitting..." : "Add Trip"}
+              {submitting ? t("advisorTrips.submitting") : t("advisorTrips.addTrip")}
             </button>
           </div>
         </form>

@@ -45,7 +45,7 @@ export default function HomePage() {
           </div>
 
           <div className="home-center">
-            <img src={previewImg} alt="Travel" className="globe-img" />
+            <img src={previewImg} alt={t("home.travel")} className="globe-img" />
           </div>
 
           <div className="home-right">
@@ -56,10 +56,10 @@ export default function HomePage() {
                   <div className="ai-name">{t("home.aiAssistant")}</div>
                   <div className="ai-status">{t("home.online")}</div>
                   <div className="ai-meta">
-                    📍 Kyoto, Japan • 🗓️ 3 days
+                    {t("home.kyotoJapan3Days")}
                   </div>
                 </div>
-                <div className="trip-preview">Kyoto • 3 days</div>
+                <div className="trip-preview">{t("home.kyoto3Days")}</div>
               </div>
 
               <div className="chat-body">
@@ -71,8 +71,8 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="chat-footer">
-                <div className="chat-info">Apr 15–25 • {t("home.bestTime")}</div>
+              <div className="chat-footer"> 
+                <div className="chat-info">{t("home.apr")} 15–25 • {t("home.bestTime")}</div>
                 <div className="chat-actions">
                   <button>{t("home.showOnMap")}</button>
                   <button>{t("home.addToWishlist")}</button>
@@ -92,37 +92,37 @@ export default function HomePage() {
 
           <div className="features-grid">
             <div className="feature-card big">
-              <img src={iskorkiImg} alt="AI Planner" className="feature-icon-iskorki" />
+              <img src={iskorkiImg} alt={t("home.aiPlannerAlt")}className="feature-icon-iskorki" />
               <h3>{t("home.aiPlanner")}</h3>
               <button>{t("home.tryItOut")} →</button>
             </div>
 
             <div className="feature-card map-card">
-              <img src={intmapImg} alt="Map" className="feature-icon" />
+              <img src={intmapImg} alt={t("home.mapAlt")} className="feature-icon" />
               <h4>{t("home.interactiveMap")}</h4>
               <p>{t("home.interactiveMapDescription")}</p>
             </div>
 
             <div className="feature-card">
-              <img src={heartImg} alt="Wishlist" className="feature-icon" />
+              <img src={heartImg} alt={t("home.wishlistAlt")} className="feature-icon" />
               <h4>{t("home.wishlist")}</h4>
-              <p>{t("home.wishlistDescription")}</p>
+              <p>{t("home.wishlistDescription")}пп</p>
             </div>
 
             <div className="feature-card">
-              <img src={safetyImg} alt="Safety" className="feature-icon" />
+              <img src={safetyImg} alt={t("home.safetyAlt")} className="feature-icon" />
               <h4>{t("home.safetyInfo")}</h4>
               <p>{t("home.safetyInfoDescription")}</p>
             </div>
 
             <div className="feature-card">
-              <img src={communityImg} alt="Community" className="feature-icon" />
+              <img src={communityImg} alt={t("home.communityAlt")} className="feature-icon" />
               <h4>{t("home.community")}</h4>
               <p>{t("home.communityDescription")}</p>
             </div>
 
             <div className="feature-card wide">
-              <img src={calendarImg} alt="Events" className="feature-icon" />
+              <img src={calendarImg} alt={t("home.eventsAlt")} className="feature-icon" />
               <h4>{t("home.eventsWeather")}</h4>
               <p>{t("home.eventsWeatherDescription")}</p>
             </div>
@@ -137,7 +137,7 @@ export default function HomePage() {
           <div className="how-content">
             <div className="how-steps">
               <div className="step-card active">
-                <div className="step-icon"><img src={messageImg} alt="message" /></div>
+                <div className="step-icon"><img src={messageImg} alt={t("home.messageAlt")}/></div>
                 <div>
                   <p className="step-number">{t("home.step1")}</p>
                   <h3>{t("home.step1Title")}</h3>
@@ -146,7 +146,7 @@ export default function HomePage() {
               </div>
 
               <div className="step-card">
-                <div className="step-icon"><img src={magicImg} alt="magic" /></div>
+                <div className="step-icon"><img src={magicImg} alt={t("home.magicAlt")}/></div>
                 <div>
                   <p className="step-number">{t("home.step2")}</p>
                   <h3>{t("home.step2Title")}</h3>
@@ -155,7 +155,7 @@ export default function HomePage() {
               </div>
 
               <div className="step-card">
-                <div className="step-icon"><img src={planeImg} alt="plane" /></div>
+                <div className="step-icon"><img src={planeImg} alt={t("home.planeAlt")}/></div>
                 <div>
                   <p className="step-number">{t("home.step3")}</p>
                   <h3>{t("home.step3Title")}</h3>
@@ -167,14 +167,14 @@ export default function HomePage() {
             <div className="how-preview wide-preview">
               <div className="how-chat">
                 <div className="chat-row ai">
-                  <div className="avatar-badge ai">AI</div>
+                  <div className="avatar-badge ai">{t("home.AI")}</div>
                   <div className="ai-bubble">{t("home.sampleChatGreeting")}</div>
                 </div>
                 <div className="chat-row user">
                   <div className="user-bubble">{t("home.sampleBeachRequest")}</div>
                 </div>
                 <div className="chat-row ai">
-                  <div className="avatar-badge ai">AI</div>
+                  <div className="avatar-badge ai">{t("home.AI")}</div>
                   <div className="ai-bubble">{t("home.sampleBeachReply")}</div>
                 </div>
                 <div className="tags">
@@ -233,55 +233,55 @@ export default function HomePage() {
         </section>
 
         {/* TESTIMONIALS SECTION */}
-<section className="testimonials-section">
-  <div className="testimonials-container">
-    <button
-      className="testimonial-btn"
-      onClick={() => {
-        if (testimonialsRef.current) {
-          testimonialsRef.current.scrollBy({
-            left: -testimonialsRef.current.offsetWidth,
-            behavior: "smooth",
-          });
-        }
-      }}
-    >
-      ←
-    </button>
+        <section className="testimonials-section">
+          <div className="testimonials-container">
+            <button
+              className="testimonial-btn"
+              onClick={() => {
+                if (testimonialsRef.current) {
+                  testimonialsRef.current.scrollBy({
+                    left: -testimonialsRef.current.offsetWidth,
+                    behavior: "smooth",
+                  });
+                }
+              }}
+            >
+              ←
+            </button>
 
-    <div className="testimonials-track" ref={testimonialsRef}>
-      {testimonials && testimonials.map((testimonial, index) => (
-        <div className="testimonial-card" key={index}>
-          {/* Главный акцент внутри карточки */}
-          <div className="testimonial-header-label">{t("home.storiesFromTravelers")}</div>
-          
-          <p className="testimonial-text">“{testimonial.text}”</p>
-          
-          <div className="testimonial-user">
-            <h4>{testimonial.name}</h4>
-            <div className="user-info-row">
-              <span>{testimonial.role}</span> , <span>{testimonial.location}</span> | <span>{testimonial.trip}</span>
+            <div className="testimonials-track" ref={testimonialsRef}>
+              {testimonials && testimonials.map((testimonial, index) => (
+                <div className="testimonial-card" key={index}>
+                  {/* Главный акцент внутри карточки */}
+                  <div className="testimonial-header-label">{t("home.storiesFromTravelers")}</div>
+                  
+                  <p className="testimonial-text">“{testimonial.text}”</p>
+                  
+                  <div className="testimonial-user">
+                    <h4>{testimonial.name}</h4>
+                    <div className="user-info-row">
+                      <span>{testimonial.role}</span> , <span>{testimonial.location}</span> | <span>{testimonial.trip}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        </div>
-      ))}
-    </div>
 
-    <button
-      className="testimonial-btn"
-      onClick={() => {
-        if (testimonialsRef.current) {
-          testimonialsRef.current.scrollBy({
-            left: testimonialsRef.current.offsetWidth,
-            behavior: "smooth",
-          });
-        }
-      }}
-    >
-      →
-    </button>
-  </div>
-</section>
+            <button
+              className="testimonial-btn"
+              onClick={() => {
+                if (testimonialsRef.current) {
+                  testimonialsRef.current.scrollBy({
+                    left: testimonialsRef.current.offsetWidth,
+                    behavior: "smooth",
+                  });
+                }
+              }}
+            >
+              →
+            </button>
+          </div>
+        </section>
       </div>
     </div>
   );

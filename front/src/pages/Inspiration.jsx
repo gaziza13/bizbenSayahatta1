@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import AddTripModal from "../components/AddTripModal";
 import PublicTripsSection from "../components/inspiration/PublicTripsSection";
 import PlaceDetailModal from "../components/inspiration/PlaceDetailModal";
@@ -47,6 +48,7 @@ const Inspiration = () => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const isAuthed = isAuthenticated;
   const isTripAdvisor = user?.role === "TRIPADVISOR" || user?.role === "ADMIN";
+  const { t } = useTranslation(); 
 
   const preferenceFilters = useMemo(() => {
     const prefs = user?.preferences || {};
@@ -175,12 +177,12 @@ const Inspiration = () => {
 
   return (
     <div className={s.page}>
-      <h1 className={s.title}>Inspiration</h1>
+      <h1 className={s.title}>{t("inspiration.inspiration")}</h1> 
 
       <div className={s.searchRow}>
         <input
           className={s.search}
-          placeholder="Search destination..."
+          placeholder={t("inspiration.searchDestination")}
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
         />
@@ -196,8 +198,8 @@ const Inspiration = () => {
                 setIsTripModalOpen,
               })
             }
-          >
-            + Add New Trip
+          > 
+          + {t("inspiration.addNewTrip")}
           </button>
         )}
       </div>
@@ -258,7 +260,7 @@ const Inspiration = () => {
 
       {next && (
         <button className={s.loadMore} onClick={() => setPage((prev) => prev + 1)}>
-          Load more
+          {t("inspiration.loadMore")}
         </button>
       )}
 

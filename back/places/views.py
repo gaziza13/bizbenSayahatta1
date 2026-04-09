@@ -26,6 +26,8 @@ from places.services.save_place import save_place_for_user, set_place_wishlist_s
 from bizbenSayahatta.api_exceptions import MapPlaceAlreadyExistsError
 from users.permissions import IsActiveAndNotBlocked
 
+from llm.services.hotel_cache import get_hotels_cached, is_hotel_cached
+
 BADGE_LEVELS = [
     {"code": "starter", "label": "Starter", "threshold": 1},
     {"code": "explorer", "label": "Explorer", "threshold": 5},
@@ -439,4 +441,114 @@ class UsersWithPublicMapListAPIView(ListAPIView):
             )
             .order_by("username", "id")
             .distinct()
+        )
+
+
+class HotelsSearchAPIView(APIView):
+    """
+    GET /api/places/hotels/search/
+    Search hotels with caching. Requires authentication.
+
+    Query params:
+    - city (required): Destination city
+    - checkin (required): Check-in date (YYYY-MM-DD)
+    - checkout (required): Checkout date (YYYY-MM-DD)
+    - budget_per_night (required): Budget per night in USD
+    - adults (optional): Number of adults (default 1)
+    - children (optional): Number of children (default 0)
+    - travel_style (optional): One of 'active', 'relaxed', 'cultural', 'budget', 'family'
+
+    Returns:
+    {
+        "hotels": [...],
+        "cached": true/false,
+        "city": "Paris",
+        "filters_applied": {
+            "price_max": 120,
+            "travel_style": "active"
+        }
+    }
+    """
+    permission_classes = [IsAuthenticated, IsActiveAndNotBlocked]
+
+    def get(self, request):
+        # Get required params
+        city = request.query_params.get("city")
+        checkin = request.query_params.get("checkin")
+        checkout = request.query_params.get("checkout")
+        budget_per_night = request.query_params.get("budget_per_night")
+
+        # Validate required params
+        missing = []
+        if not city:
+            missing.append("city")
+        if not checkin:
+            missing.append("checkin")
+        if not checkout:
+            missing.append("checkout")
+        if not budget_per_night:
+            missing.append("budget_per_night")
+
+        if missing:
+            return Response(
+                {"detail": f"Missing required parameters: {', '.join(missing)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Parse optional params
+        try:
+            adults = int(request.query_params.get("adults", 1))
+        except (ValueError, TypeError):
+            adults = 1
+
+        try:
+            children = int(request.query_params.get("children", 0))
+        except (ValueError, TypeError):
+            children = 0
+
+        try:
+            budget_value = float(budget_per_night)
+        except (ValueError, TypeError):
+            return Response(
+                {"detail": "budget_per_night must be a valid number"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        travel_style = request.query_params.get("travel_style")
+
+        # Check if cached before fetching
+        was_cached = is_hotel_cached(
+            city=city,
+            checkin=checkin,
+            checkout=checkout,
+            budget_per_night=budget_value,
+            adults=adults,
+        )
+
+        # Fetch hotels (uses cache internally)
+        hotels = get_hotels_cached(
+            city_name=city,
+            checkin=checkin,
+            checkout=checkout,
+            budget_per_night=budget_value,
+            adults=adults,
+            children=children,
+            travel_style=travel_style,
+        )
+
+        # Build filters applied info
+        filters_applied = {
+            "price_max": int(budget_value * 0.9),
+        }
+        if travel_style:
+            filters_applied["travel_style"] = travel_style
+
+        return Response(
+            {
+                "hotels": hotels,
+                "cached": was_cached,
+                "city": city,
+                "filters_applied": filters_applied,
+            },
+            status=status.HTTP_200_OK,
         )
