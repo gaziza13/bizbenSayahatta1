@@ -349,6 +349,8 @@ const ru = {
     cancel: "Отмена",
     submitting: "Отправка...",
     addTrip: "Добавить поездку",
+    category: "Категория",
+    selectCategory: "Выбери категорию",
   },
   tripStatus: {
     title: "Статус поездок",
@@ -473,6 +475,7 @@ const ru = {
     },
     contactInfo: "Контактная информация",
     bio: "Био",
+    category:"Твоя trip advisor категория",
   },
   trips: {
     myTrips: "Мои поездки",

@@ -351,6 +351,8 @@ const kz = {
     cancel: "Бас тарту",
     submitting: "Жіберілуде...",
     addTrip: "Сапар қосу",
+    category: "Категория",
+    selectCategory: "Категория таңдауы",
   },
   tripStatus: {
     title: "Сапар мәртебесі",
@@ -475,6 +477,7 @@ const kz = {
     },
     contactInfo: "Байланыс ақпараты", 
     bio: "Жеке ақпарат",
+    category:"Сенің trip advisor категорияң",
   },
   trips: {
     myTrips: "Менің сапарларым",

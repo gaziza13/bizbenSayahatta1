@@ -24,6 +24,15 @@ import {
 import { toggleMustVisit } from "../api/places";
 import s from "../styles/Inspiration.module.css";
 
+// Helper to map TripAdvisor price amount to Google Places price_level format
+function mapPriceToLevel(amount) {
+  if (!amount) return null;
+  if (amount < 20) return "PRICE_LEVEL_INEXPENSIVE";
+  if (amount < 50) return "PRICE_LEVEL_MODERATE";
+  if (amount < 100) return "PRICE_LEVEL_EXPENSIVE";
+  return "PRICE_LEVEL_VERY_EXPENSIVE";
+}
+
 const Inspiration = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [places, setPlaces] = useState([]);
@@ -48,6 +57,9 @@ const Inspiration = () => {
   const [publicTrips, setPublicTrips] = useState([]);
   const [loadingTrips, setLoadingTrips] = useState(false);
 
+  const [sourceType, setSourceType] = useState("all"); // "all" | "places" | "tours"
+  const [tours, setTours] = useState([]);
+  
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -76,6 +88,7 @@ const Inspiration = () => {
       dateFrom,
       dateTo,
       setPlaces,
+      setTours,
       setNext,
     });
   }, [page, search, category, preferenceFilters, priceFilter, dateFrom, dateTo]);
@@ -233,36 +246,92 @@ const Inspiration = () => {
           setPage(1);
           setDateTo(value);
         }}
+        sourceType={sourceType}
+        onSourceTypeChange={(value) => {
+          setPage(1);
+          setSourceType(value);
+        }}
       />
 
       <PublicTripsSection styles={s} loadingTrips={loadingTrips} publicTrips={publicTrips} />
 
       <div className={s.grid}>
-        {places.map((place) => (
-          <PlaceCard
-            key={place.id}
-            place={place}
-            variant="inspiration"
-            isFavorited={place.is_must_visit}
-            classes={{
-              card: s.card,
-              photo: s.photo,
-              photoPlaceholder: s.photoPlaceholder,
-              cardHeader: s.cardHeader,
-              category: s.category,
-              metaRow: s.metaRow,
-              rating: s.rating,
-              priceTag: s.priceTag,
-              name: s.name,
-              location: s.location,
-              heartBtn: s.heartBtn,
-              heartActive: s.heartActive,
-              heartImg: s.heartImg,
-            }}
-            onOpen={() => openPlaceModal(place)}
-            onToggleFavorite={() => handleToggleFavoriteInPlace(place.id)}
-          />
-        ))}
+        {/* Render based on sourceType filter */}
+        {/* Places (Google Places) */}
+        {(sourceType === "all" || sourceType === "places") &&
+          places.map((place) => (
+            <PlaceCard
+              key={`place-${place.id}`}
+              place={place}
+              variant="inspiration"
+              isFavorited={place.is_must_visit}
+              classes={{
+                card: s.card,
+                photo: s.photo,
+                photoPlaceholder: s.photoPlaceholder,
+                cardHeader: s.cardHeader,
+                category: s.category,
+                metaRow: s.metaRow,
+                rating: s.rating,
+                priceTag: s.priceTag,
+                name: s.name,
+                location: s.location,
+                heartBtn: s.heartBtn,
+                heartActive: s.heartActive,
+                heartImg: s.heartImg,
+              }}
+              onOpen={() => openPlaceModal(place)}
+              onToggleFavorite={() => handleToggleFavoriteInPlace(place.id)}
+            />
+          ))}
+
+        {/* Tours (TripAdvisor) */}
+        {(sourceType === "all" || sourceType === "tours") &&
+          tours.map((tour, index) => (
+            <PlaceCard
+              key={`tour-${tour.id || index}`}
+              place={{
+                id: `tour-${tour.id}`,
+                name: tour.name,
+                description: tour.description,
+                photo_url: tour.photo_url,
+                rating: tour.rating,
+                category: tour.category || "tour",
+                city: tour.city || search || "",
+                price_level: tour.price_amount ? mapPriceToLevel(tour.price_amount) : null,
+                is_must_visit: false,
+              }}
+              variant="inspiration"
+              isFavorited={false}
+              source="tripadvisor"
+              duration={tour.duration}
+              bookingUrl={tour.booking_url}
+              numReviews={tour.num_reviews}
+              award={tour.award}
+              webUrl={tour.web_url}
+              classes={{
+                card: s.card,
+                photo: s.photo,
+                photoPlaceholder: s.photoPlaceholder,
+                cardHeader: s.cardHeader,
+                category: s.category,
+                metaRow: s.metaRow,
+                rating: s.rating,
+                priceTag: s.priceTag,
+                name: s.name,
+                location: s.location,
+                heartBtn: s.heartBtn,
+                heartActive: s.heartActive,
+                heartImg: s.heartImg,
+                duration: s.duration,
+                award: s.award,
+                reviews: s.reviews,
+                bookBtn: s.bookBtn,
+              }}
+              onOpen={() => openPlaceModal({ ...tour, id: `tour-${tour.id}` })}
+              onToggleFavorite={() => {}}
+            />
+          ))}
       </div>
 
       {next && (

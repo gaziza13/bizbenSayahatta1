@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useTranslation } from "react-i18next";
-// NEED TRANSLATION
+
 export default function AddTripModal({
   isOpen,
   onClose,
@@ -153,21 +153,21 @@ export default function AddTripModal({
             <input
               type="text"
               name="title"
-              placeholder="Trip Name"
+              placeholder={t("advisorTrips.tripName")}
               value={newTrip.title}
               onChange={handleChange}
               required
             />
 
               <label>
-                <span>Category</span>
+                <span>{t("advisorTrips.category")}</span>
                 <select
                   name="category_id"
                   value={newTrip.category_id}
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Select category</option>
+                  <option value="">{t("advisorTrips.selectCategory")}</option>
                   {tripCategories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -179,7 +179,7 @@ export default function AddTripModal({
             <input
               type="text"
               name="place"
-              placeholder="Place"
+              placeholder={t("advisorTrips.place")}
               value={newTrip.place}
               onChange={handleChange}
               required
@@ -203,14 +203,14 @@ export default function AddTripModal({
             <input
               type="number"
               name="budget"
-              placeholder="Budget"
+              placeholder={t("advisorTrips.budget")}
               value={newTrip.budget}
               onChange={handleChange}
             />
 
             <textarea
               name="comment"
-              placeholder="Additional information"
+              placeholder={t("advisorTrips.additionalInformation")}
               rows={3}
               value={newTrip.comment}
               onChange={handleChange}
@@ -222,10 +222,10 @@ export default function AddTripModal({
 
           <div className="modal-actions">
             <button type="button" className="cancel-btn" onClick={handleClose}>
-              Cancel
+              {t("advisorTrips.cancel")}
             </button>
             <button type="submit" className="save-btn" disabled={submitting}>
-              {submitting ? "Submitting..." : "Add Trip"}
+              {submitting ? t("advisorTrips.submitting") : t("advisorTrips.addTrip")}
             </button>
           </div>
         </form>

@@ -10,11 +10,31 @@ export default function PlaceCard({
   onOpen,
   onToggleFavorite,
   isFavorited: isFavoritedProp,
+  classes,         // Optional CSS classes override
+  // New optional props (all nullable — no errors if missing)
+  source,          // "google" | "tripadvisor"
+  duration,        // e.g. "3 hours"
+  bookingUrl,      // direct booking link
+  numReviews,      // number of reviews
+  award,           // e.g. "Travelers' Choice 2024"
+  webUrl,          // TripAdvisor page link
 }) {
   const isFavorited = isFavoritedProp !== undefined ? isFavoritedProp : place?.is_must_visit;
   const isWishlist = variant === "wishlist";
   const location = isWishlist ? `${place.city || ""}${place.city && place.country ? ", " : ""}${place.country || ""}` : formatLocation(place);
-  const { t } = useTranslation(); 
+  const { t } = useTranslation();
+
+  // Support both direct props and place object fields (for TripAdvisor data)
+  const displayDuration = duration || place?.duration;
+  const displayBookingUrl = bookingUrl || place?.booking_url;
+  const displayNumReviews = numReviews || place?.num_reviews;
+  const displayAward = award || place?.award;
+  const displayWebUrl = webUrl || place?.web_url;
+  const displaySource = source || place?.source;
+  const isTripAdvisor = displaySource === "tripadvisor";
+
+  // Use provided classes or default styles
+  const s = classes || defaultStyles;
 
   return (
     <div

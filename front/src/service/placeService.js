@@ -18,6 +18,7 @@ export async function loadPlaces({
   dateFrom,
   dateTo,
   setPlaces,
+  setTours,
   setNext,
 }) {
   const data = await fetchInspirationPlaces(
@@ -27,12 +28,20 @@ export async function loadPlaces({
     preferenceFilters
   );
 
-  let filteredResults = filterByPrice(data.results, priceFilter);
-  filteredResults = filterByDate(filteredResults, dateFrom, dateTo);
+// Filter places
+  let filteredPlaces = filterByPrice(data.places || [], priceFilter);
+  filteredPlaces = filterByDate(filteredPlaces, dateFrom, dateTo);
 
-  setPlaces((prev) => (page === 1 ? filteredResults : [...prev, ...filteredResults]));
+  // Tours are not filtered by price/date (they have their own data)
+  const filteredTours = data.tours || [];
+
+  setPlaces((prev) => (page === 1 ? filteredPlaces : [...prev, ...filteredPlaces]));
+  if (setTours) {
+    setTours(filteredTours);
+  }
   setNext(data.next);
 }
+
 
 export async function loadPublicTrips({ setLoadingTrips, setPublicTrips }) {
   setLoadingTrips(true);

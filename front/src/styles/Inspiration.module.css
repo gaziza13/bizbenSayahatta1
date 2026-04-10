@@ -860,13 +860,28 @@
 
 /* 🔥 кнопки */
 .iconBtn {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
   background: rgb(255, 255, 255);
   border-radius: 50%;
-  padding: 6px;
+  /* padding: 6px; */
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.iconBtnClose{
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  background: rgb(255, 255, 255);
+  border-radius: 50%;
+  /* padding: 6px; */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.iconBtnClose:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
 .iconBtn:hover {

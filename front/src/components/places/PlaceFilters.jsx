@@ -10,23 +10,22 @@ export default function PlaceFilters({
   onPriceFilterChange,
   dateFrom,
   onDateFromChange,
+  sourceType = "all",
   dateTo,
   onDateToChange,
 }) {
 
   const { t } = useTranslation();
   
-  return (
+return (
     <div className={styles.controls}>
       <div className={styles.selectRowWithShadow}>
         <div className={styles.selectBlock}>
-          <span className={styles.selectLabel}>{t("inspiration.filter.byCategory")}</span>
-          <select className={styles.select} value={category} onChange={(e) => onCategoryChange(e.target.value)}>
-            {categories.map((item) => (
-              <option key={item} value={item}>
-                {item === "all" ? t("inspiration.filter.allCategories") : formatCategory(item)}
-              </option>
-            ))}
+          <span className={styles.selectLabel}>{t("inspiration.filter.bySource")}</span>
+          <select className={styles.select} value={sourceType} onChange={(e) => onSourceTypeChange(e.target.value)}>
+            <option value="all">{t("inspiration.filter.all")}</option>
+            <option value="places">{t("inspiration.filter.places")}</option>
+            <option value="tours">{t("inspiration.filter.tours")}</option>
           </select>
         </div>
 

@@ -21,6 +21,19 @@ export default function AdvisorModal({
         </div>
 
         <div className="advisor-form-stack">
+          <label> 
+            {/* need editing */}
+            {t("profile.category")} "Your trip advisor category"
+            <input
+              type="text"
+              placeholder="https://instagram.com/..."
+              value={advisorForm.instagram}
+              onChange={(e) =>
+                setAdvisorForm((prev) => ({ ...prev, instagram: e.target.value }))
+              }
+            />
+          </label>
+          
           <label>
             {t("profile.instagram")}
             <input

@@ -352,6 +352,9 @@ const en = {
     cancel: "Cancel",
     submitting: "Submitting...",
     addTrip: "Add Trip",
+    category: "Category",
+    selectCategory: "Select category",
+
   },
   tripStatus: {
     title: "Trips Status",
@@ -476,6 +479,7 @@ const en = {
     },
     contactInfo: "Contact info",
     bio: "Bio",
+    category:"Your trip advisor category",
 
   },
   trips: {
