@@ -80,6 +80,7 @@ else:
     CSRF_TRUSTED_ORIGINS = [
         "https://bizbensayahatta.onrender.com",
         "https://bizbensayahatta.vercel.app",
+        "https://www.bizbensayahatta.vercel.app",
     ]
 
 
@@ -123,12 +124,19 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-#CORS_ALLOW_ALL_ORIGINS = True
-
-CORS_ALLOWED_ORIGINS = [
+# Браузер шлёт Origin ровно как в адресной строке: с www или без, preview *.vercel.app и т.д.
+_default_cors_origins = [
     "https://bizbensayahatta.vercel.app",
+    "https://www.bizbensayahatta.vercel.app",
     "https://bizbensayahatta.onrender.com",
 ]
+_cors_extra = (os.getenv("CORS_ALLOWED_ORIGINS") or "").strip()
+if _cors_extra:
+    _from_env = [o.strip() for o in _cors_extra.split(",") if o.strip()]
+    # merge: дефолты + env, без дублей, порядок сохраняется
+    CORS_ALLOWED_ORIGINS = list(dict.fromkeys(_default_cors_origins + _from_env))
+else:
+    CORS_ALLOWED_ORIGINS = _default_cors_origins
 
 CORS_ALLOW_CREDENTIALS = True
 
