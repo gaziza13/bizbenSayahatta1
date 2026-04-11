@@ -11,9 +11,10 @@ import messageImg from "../assets/message.svg";
 import magicImg from "../assets/magic.svg";
 import planeImg from "../assets/plane.svg";
 import pointImg from "../assets/point.svg";
+import howItWorksImg from "../assets/howItWorks.png";
 import { Link } from "react-router-dom";
 import { useHomeInspirations } from "../hooks/useHomeInspirations";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export default function HomePage() {
@@ -25,6 +26,7 @@ export default function HomePage() {
   } = useHomeInspirations();
 
   const testimonialsRef = useRef(null);
+  const [activeStep, setActiveStep] = useState(1);
 
   return (
     <div className="home-page">
@@ -93,7 +95,7 @@ export default function HomePage() {
 
           <div className="features-grid">
             <div className="feature-card big">
-              <img src={iskorkiImg} alt={t("home.aiPlannerAlt")}className="feature-icon-iskorki" />
+              <img src={iskorkiImg} alt={t("home.aiPlannerAlt")} className="feature-icon-iskorki" />
               <h3>{t("home.aiPlanner")}</h3>
               <button>{t("home.tryItOut")} →</button>
             </div>
@@ -107,7 +109,7 @@ export default function HomePage() {
             <div className="feature-card">
               <img src={heartImg} alt={t("home.wishlistAlt")} className="feature-icon" />
               <h4>{t("home.wishlist")}</h4>
-              <p>{t("home.wishlistDescription")}пп</p>
+              <p>{t("home.wishlistDescription")}</p>
             </div>
 
             <div className="feature-card">
@@ -136,36 +138,34 @@ export default function HomePage() {
           <h2>{t("home.howTitle")}</h2>
 
           <div className="how-content">
+            
+            {/* LEFT */}
             <div className="how-steps">
-              <div className="step-card active">
-                <div className="step-icon"><img src={messageImg} alt={t("home.messageAlt")}/></div>
-                <div>
-                  <p className="step-number">{t("home.step1")}</p>
-                  <h3>{t("home.step1Title")}</h3>
-                  <p>{t("home.step1Description")}</p>
+              {[1,2,3].map((step) => (
+                <div
+                  key={step}
+                  className={`step-card ${activeStep === step ? "active" : ""}`}
+                  onClick={() => setActiveStep(step)}
+                >
+                  <div className="step-icon">
+                    <img 
+                      src={step === 1 ? messageImg : step === 2 ? magicImg : planeImg} 
+                      alt="" 
+                    />
+                  </div>
+                  <div>
+                    <p className="step-number">{t(`home.step${step}`)}</p>
+                    <h3>{t(`home.step${step}Title`)}</h3>
+                    <p>{t(`home.step${step}Description`)}</p>
+                  </div>
                 </div>
-              </div>
-
-              <div className="step-card">
-                <div className="step-icon"><img src={magicImg} alt={t("home.magicAlt")}/></div>
-                <div>
-                  <p className="step-number">{t("home.step2")}</p>
-                  <h3>{t("home.step2Title")}</h3>
-                  <p>{t("home.step2Description")}</p>
-                </div>
-              </div>
-
-              <div className="step-card">
-                <div className="step-icon"><img src={planeImg} alt={t("home.planeAlt")}/></div>
-                <div>
-                  <p className="step-number">{t("home.step3")}</p>
-                  <h3>{t("home.step3Title")}</h3>
-                  <p>{t("home.step3Description")}</p>
-                </div>
-              </div>
+              ))}
             </div>
 
+            {/* RIGHT */}
             <div className="how-preview wide-preview">
+              
+              {/* CHAT */}
               <div className="how-chat">
                 <div className="chat-row ai">
                   <div className="avatar-badge ai">{t("home.AI")}</div>
@@ -179,11 +179,40 @@ export default function HomePage() {
                   <div className="ai-bubble">{t("home.sampleBeachReply")}</div>
                 </div>
                 <div className="tags">
-                  <span>{t("home.tagBeach")}</span>
                   <span>{t("home.tagActive")}</span>
                   <span>{t("home.tagCultural")}</span>
                 </div>
               </div>
+
+              {/* STEP 2 */}
+              <div className="steps-wrapper">
+  {/* Эта часть видна всегда или по условию */}
+
+  {/* Генерируем карточки шагов 2 и 3 в один поток */}
+  {activeStep >= 2 && (
+    <div className="trip-card">
+       <h4>Final Trip</h4>
+       <p><strong>Paris</strong></p>
+       <p><b>Day 1:</b> Babylon Tours Paris, Tuileries Garden, Le Tout-Paris</p>
+        <p><b>Day 2:</b> Le Ju', Notre-Dame Cathedral of Paris</p>
+        <p><b>Day 3:</b> Montmartre, Pink Mamma</p>
+    </div>
+  )}
+
+  {activeStep >= 2 && (
+    <div className="map-card-preview">
+      <img className="map-card-img" src={howItWorksImg} alt="preview" />
+    </div>
+  )}
+
+  {activeStep >= 3 && (
+    <div className="sources-card">
+      <p>📚 Sources & Useful Links</p>
+      <p>📍 Babylon Tours Paris</p>
+      <p>📍 Tuileries Garden</p>
+    </div>
+  )}
+</div>
             </div>
           </div>
         </div>
