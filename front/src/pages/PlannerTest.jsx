@@ -559,16 +559,6 @@ const filteredArchivedThreads = useMemo(() => {
       </aside>
 
       <section className="chat-panel">
-        <div className="chat-header">
-          <div>
-            <p className="chat-header-label">{t("chat.currentChat")}</p>
-            <h1>{selectedThread?.title || t("chat.chooseChat")}</h1>
-          </div>
-          {selectedThread?.is_archived ? (
-            <span className="archived-pill">{t("chat.archived")}</span>
-          ) : null}
-        </div>
-
         <div className="chat-messages">
           {!selectedThread ? (
             <div className="chat-empty-state">
@@ -613,7 +603,6 @@ const filteredArchivedThreads = useMemo(() => {
       <aside className="right-panel">
         <div className="right-panel-toolbar">
           <div>
-            <p className="right-panel-label">{t("chat.tripTools")}</p>
             <h2>{selectedThread ? t("chat.thisChatSPlan") : t("chat.tripPreview")}</h2>
           </div>
         </div>
