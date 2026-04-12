@@ -83,9 +83,9 @@ const en = {
       "Book everything in one click or customize the plan. Get real-time help.",
     sampleChatGreeting: "Hi! Where would you like to travel?",
     sampleBeachRequest:
-      "I want a beach vacation in February, budget up to $2000",
+      "I want an active vacation in Paris for 3 days, budget up to $2000",
     sampleBeachReply:
-      "Great choice! Thailand or Sri Lanka would be perfect.",
+      "Great choice! Paris is a perfect place for cultural vacation.",
     tagBeach: "Beach",
     tagActive: "Active",
     tagCultural: "Cultural",

@@ -13,7 +13,7 @@
 .home-content {
   display: flex;
   gap: 60px;
-  max-width: 1400px;
+  max-width: 1400px; 
   width: 100%;
   align-items: center;
 }
@@ -524,7 +524,8 @@ font-size: 14px;
 .how-preview {
   flex: 1;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .how-chat {
@@ -532,11 +533,92 @@ font-size: 14px;
   border-radius: 20px;
   padding: 24px;
   width: 100%;
-  max-width: 600px;
+  height: 100%;
+  max-width: 680px;
   display: flex;
   flex-direction: column;
   gap: 14px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+/* 1. Родительский контейнер */
+.steps-wrapper {
+  display: grid;
+  /* Левая колонка гибкая, правая — строго под ширину карты */
+  grid-template-columns: 1fr 320px; 
+  gap: 15px;
+  width: 100%;
+  align-items: start; /* Чтобы карточки не растягивались по высоте картинки */
+}
+
+/* Чат сверху на обе колонки */
+.how-chat {
+  grid-column: 1 / 3; 
+  margin-bottom: 10px;
+}
+
+/* 2. Левая колонка (Карточки) */
+.trip-card {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+  
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #f1f1f1;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  height: fit-content;
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+.sources-card {
+  grid-column: 1 / 2;
+  grid-row: 3 / 4; /* Строго под trip-card */
+  margin-top: 10px; /* Небольшой отступ между ними */
+
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #f1f1f1;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  height: fit-content;
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+/* 3. Правая колонка (Карта) */
+.map-card-preview {
+  grid-column: 2 / 3;
+  grid-row: 2 / 4; /* Занимает пространство напротив обеих карточек */
+  height: fit-content;
+  min-height: 340px; /* Минимальная высота, чтобы не была слишком мелкой */
+  animation: slideIn 0.6s ease-out 0.1s both;
+}
+
+.map-card-img {
+  width: 320px;
+  height: 100%; /* Заполнит высоту, выделенную grid-row 2/4 */
+  min-height: 340px; /* Минимальная высота, чтобы не была слишком мелкой */
+  border-radius: 20px;
+  object-fit: cover;
+  display: block;
+}
+
+/* --- Стили текста (дублируем дизайн) --- */
+.trip-card h4, 
+.sources-card p:first-child { 
+  margin: 15px 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.trip-card p, 
+.sources-card p {
+  font-size: 13px;
+  color: #57585c;
+  margin: 8px 12px;
+  line-height: 1.4;
 }
 
 /* ===== HOW RIGHT SIDE IMPROVEMENTS ===== */
@@ -1123,5 +1205,171 @@ font-size: 14px;
   .contact-form input,
   .contact-form textarea {
     font-size: 13px;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px); /* Появление чуть снизу */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===============================
+   EXTRA RESPONSIVE FIXES
+================================= */
+
+/* 📱 TABLET (<= 1024px) */
+@media (max-width: 1024px) {
+
+  /* steps-wrapper → в колонку */
+  .steps-wrapper {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .how-chat {
+    grid-column: auto;
+  }
+
+  .trip-card,
+  .sources-card,
+  .map-card-preview {
+    grid-column: auto;
+    grid-row: auto;
+    width: 100%;
+  }
+
+  .map-card-img {
+    width: 100%;
+    height: 260px;
+  }
+
+  /* чуть компактнее чат */
+  .how-chat {
+    padding: 20px;
+  }
+
+  /* inspiration */
+  .inspiration-head {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .inspiration-head h2 {
+    font-size: 36px;
+  }
+
+  /* testimonials кнопки внутрь */
+  .testimonial-btn:first-child {
+    left: 10px;
+  }
+
+  .testimonial-btn:last-child {
+    right: 10px;
+  }
+}
+
+/* 📱 MOBILE (<= 768px) */
+@media (max-width: 768px) {
+
+  /* hero */
+  .home-content {
+    gap: 30px;
+  }
+
+  .home-center .globe-img {
+    width: 220px;
+  }
+
+  /* chat card */
+  .home-right .chat-card {
+    padding: 18px;
+  }
+
+  /* chat bubbles */
+  .ai-bubble,
+  .user-bubble {
+    max-width: 90%;
+    font-size: 13px;
+  }
+
+  /* шаги */
+  .step-card {
+    padding: 18px;
+  }
+
+  .step-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* how preview */
+  .how-chat {
+    border-radius: 16px;
+  }
+
+  /* inspiration */
+  .inspiration-card img {
+    height: 180px;
+  }
+
+  /* testimonials */
+  .testimonial-card {
+    padding: 30px 16px;
+  }
+
+  .testimonial-text {
+    font-size: 15px;
+  }
+}
+
+/* 📱 SMALL MOBILE (<= 480px) */
+@media (max-width: 480px) {
+
+  /* hero */
+  .home-page {
+    padding: 30px 12px;
+  }
+
+  .home-left h1 {
+    line-height: 1.2;
+  }
+
+  /* кнопка */
+  .create-trip-btn {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  /* chat */
+  .chat-info {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  /* tags */
+  .tags span {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  /* inspiration */
+  .inspiration-head h2 {
+    font-size: 26px;
+  }
+
+  /* testimonial */
+  .testimonial-header-label {
+    font-size: 16px;
+  }
+
+  /* contact */
+  .contact-section {
+    padding: 50px 12px;
   }
 }
