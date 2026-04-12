@@ -14,6 +14,7 @@ import ProfileAdvisorPanel from "../components/profile/ProfileAdvisorPanel";
 import AdvisorModal from "../components/profile/AdvisorModal";
 import { useAdvisor } from "../hooks/useAdvisor";
 import { useProfile } from "../hooks/useProfile";
+import { loadTripCategories } from "../service/placeService";
 
 const PROFILE_TABS = [
   { id: "bio", label: "Bio" },
@@ -28,6 +29,7 @@ export default function ProfileCard() {
   const advisor = useAdvisor();
   const [activeTab, setActiveTab] = useState("bio");
   const [mapPlaces, setMapPlaces] = useState([]);
+  const [tripCategories, setTripCategories] = useState([]);
 
   useEffect(() => {
     const loadMap = async () => {
@@ -40,6 +42,10 @@ export default function ProfileCard() {
     };
 
     loadMap();
+  }, []);
+
+  useEffect(() => {
+    loadTripCategories({ setTripCategories });
   }, []);
 
   return (
@@ -159,6 +165,7 @@ export default function ProfileCard() {
           advisorForm={advisor.advisorForm}
           setAdvisorForm={advisor.setAdvisorForm}
           advisorLoading={advisor.advisorLoading}
+          tripCategories={tripCategories}
           advisorError={advisor.advisorError}
           onSubmit={advisor.submitAdvisorApplication}
           onClose={() => advisor.setAdvisorModalOpen(false)}

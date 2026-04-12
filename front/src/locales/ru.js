@@ -335,6 +335,12 @@ const ru = {
     deleteForever: "Удалить навсегда",
     mapUnavailable: "Карта недоступна",
     day: "День",
+    travelers: "Путешественники",
+    dailyBudget: "Дневной бюджет",
+    totalBudget: "Общий бюджет",
+    currentEstimate: "Текущая оценка",
+    safetyTips: "Советы по безопасности",
+    sources: "Источники",
   },
   advisorTrips: {
     noCategoriesAvailable: "Нет доступных категорий. Попробуйте позже.",

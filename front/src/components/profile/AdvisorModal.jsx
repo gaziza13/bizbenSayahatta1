@@ -7,8 +7,11 @@ export default function AdvisorModal({
   advisorError,
   onSubmit,
   onClose,
+  tripCategories = [],
 }) {
   const { t } = useTranslation();
+  console.log("tripCategories in AdvisorModal:", tripCategories);
+
 
   return (
     <div className="modal-overlay">
@@ -20,20 +23,26 @@ export default function AdvisorModal({
           </p>
         </div>
 
-        <div className="advisor-form-stack">
-          <label> 
-            {/* need editing */}
-            {t("profile.category")} "Your trip advisor category"
-            <input
-              type="text"
-              placeholder="https://instagram.com/..."
-              value={advisorForm.instagram}
-              onChange={(e) =>
-                setAdvisorForm((prev) => ({ ...prev, instagram: e.target.value }))
+        <div className="advisor-form-stack">          
+              <label>
+                <span>{t("advisorTrips.category")}</span>
+                <select
+                  name="category_id"
+                  value={advisorForm.category_id} 
+                  onChange={(e) => setAdvisorForm((prev) => ({ ...prev, category_id: e.target.value }))
               }
-            />
-          </label>
-          
+                  required
+                >
+                  
+                  <option value="">{t("advisorTrips.selectCategory")}</option>
+                  {tripCategories?.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
           <label>
             {t("profile.instagram")}
             <input

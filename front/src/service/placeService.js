@@ -280,9 +280,15 @@ export async function handleSubmitTrip({
   if (tripUploadPreview) mediaUrls.push(tripUploadPreview);
   if (tripForm.photo_url) mediaUrls.push(tripForm.photo_url);
 
+    //       const firstCategoryId = tripCategories?.[0]?.id;
+    // if (!firstCategoryId) {
+    //   setSubmitError("No categories available. Please try again later.");
+    //   return;
+    // }
+
   try {
     const resolvedCategoryId =
-      tripForm.category_id || (tripCategories[0]?.id ? String(tripCategories[0].id) : "");
+      tripForm.category_id || (tripCategories?.[0]?.id ? String(tripCategories[0].id) : "");
     if (!resolvedCategoryId) {
       setTripError("No available category. Please try again later.");
       setTripSubmitting(false);

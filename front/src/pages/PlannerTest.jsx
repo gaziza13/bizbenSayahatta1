@@ -203,20 +203,20 @@ const filteredArchivedThreads = useMemo(() => {
     }
   }, [dispatch, user]);
 
-  const resolveNextSelection = useCallback((activeThreads, archivedList) => {
+  const resolveNextSelection = useCallback((activeThreads, archivedList, currentSelectedId) => {
     // Pick the next visible chat after archive/delete actions.
     const requestedId = Number(threadFromUrl);
     const combined = combineThreads(activeThreads, archivedList);
-    if (selectedId && combined.some((thread) => thread.id === selectedId)) {
-      return selectedId;
+    if (currentSelectedId && combined.some((thread) => thread.id === currentSelectedId)) {
+      return currentSelectedId;
     }
     if (requestedId && combined.some((thread) => thread.id === requestedId)) {
       return requestedId;
     }
     return activeThreads[0]?.id || archivedList[0]?.id || null;
-  }, [selectedId, threadFromUrl]);
+  }, [threadFromUrl]);
 
-  const loadThreads = useCallback(async () => {
+  const loadThreads = useCallback(async (currentSelectedId) => {
     // Load active and archived chats so the sidebar can move items instantly.
     setLoadingThreads(true);
     setError("");
@@ -229,7 +229,7 @@ const filteredArchivedThreads = useMemo(() => {
       const nextArchived = archivedResponse.data || [];
       setThreads(nextThreads);
       setArchivedThreads(nextArchived);
-      setSelectedId(resolveNextSelection(nextThreads, nextArchived));
+      setSelectedId(resolveNextSelection(nextThreads, nextArchived, currentSelectedId));
     } catch (requestError) {
       setError(requestError.response?.data?.detail || t("chat.failedToLoadChats"));
     } finally {
@@ -238,8 +238,9 @@ const filteredArchivedThreads = useMemo(() => {
   }, [resolveNextSelection, t]);
 
   useEffect(() => {
-    loadThreads();
-  }, [loadThreads]);
+    loadThreads(selectedId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     // Keep the URL in sync with the currently open chat.
@@ -322,7 +323,8 @@ const filteredArchivedThreads = useMemo(() => {
     return () => {
       cancelled = true;
     };
-  }, [selectedId, tripCache, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId, t]);
 
   const handleCreateThread = async () => {
     // Create a new planner chat and focus it immediately.

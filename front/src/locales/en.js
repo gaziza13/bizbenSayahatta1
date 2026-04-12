@@ -338,6 +338,12 @@ const en = {
     deleteForever: "Delete forever",
     mapUnavailable: "Map unavailable",
     day: "Day",
+    travelers: "Travelers",
+    dailyBudget: "Daily Budget",
+    totalBudget: "Total Budget",
+    currentEstimate: "Current Estimate",
+    safetyTips: "Safety Tips",
+    sources: "Sources",
   },
   advisorTrips: {
     noCategoriesAvailable: "No categories available. Please try again later.",
