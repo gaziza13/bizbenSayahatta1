@@ -609,7 +609,7 @@ const filteredArchivedThreads = useMemo(() => {
           </div>
         </div>
 
-        {mapOpen && selectedThread ? (
+        {/* {mapOpen && selectedThread ? (
           <div className="map-box map-box--open">
             <div className="map-box-header">
               <span></span>
@@ -619,7 +619,14 @@ const filteredArchivedThreads = useMemo(() => {
             </div>
             <TravelPlannerMap key={selectedId} plan={currentTrip} isOpen />
           </div>
+        ) : null} */}
+        {mapOpen && selectedThread ? (
+          <div className="map-box map-box--open">
+            <TravelPlannerMap key={selectedId} plan={currentTrip} isOpen />
+            {/* <button type="button" className="map-close-btn" onClick={() => setMapOpen(false)}>×</button> */}
+          </div>
         ) : null}
+
 
         <div className={`final-box ${mapOpen ? "final-box--split" : ""}`}>
 
