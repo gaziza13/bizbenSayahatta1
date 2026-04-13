@@ -8,8 +8,11 @@ import intmapImg from "../assets/intmap.png";
 import iskorkiImg from "../assets/iskorki.png";
 import safetyImg from "../assets/safety.png";
 import messageImg from "../assets/message.svg";
+import messageImg2 from "../assets/message2.svg";
 import magicImg from "../assets/magic.svg";
+import magicImg2 from "../assets/magic2.svg";
 import planeImg from "../assets/plane.svg";
+import planeImg2 from "../assets/plane2.svg";
 import pointImg from "../assets/point.svg";
 import howItWorksImg from "../assets/howItWorks.png";
 import { Link } from "react-router-dom";
@@ -143,15 +146,27 @@ export default function HomePage() {
             <div className="how-steps">
               {[1,2,3].map((step) => (
                 <div
-                  key={step}
-                  className={`step-card ${activeStep === step ? "active" : ""}`}
-                  onClick={() => setActiveStep(step)}
-                >
+  key={step}
+  className={`step-card ${
+    activeStep === step
+      ? "active"
+      : step < activeStep
+      ? "inactive"
+      : ""
+  }`}
+  onClick={() => setActiveStep(step)}
+>
                   <div className="step-icon">
                     <img 
-                      src={step === 1 ? messageImg : step === 2 ? magicImg : planeImg} 
-                      alt="" 
-                    />
+                        src={
+                          step === 1
+                            ? activeStep === 1 ? messageImg : messageImg2
+                            : step === 2
+                            ? activeStep === 2 ? magicImg2 : magicImg
+                            : activeStep === 3 ? planeImg2 : planeImg
+                            }
+                          alt=""
+                      />
                   </div>
                   <div>
                     <p className="step-number">{t(`home.step${step}`)}</p>

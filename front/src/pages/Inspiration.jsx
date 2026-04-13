@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import AddTripModal from "../components/AddTripModal";
 import PublicTripsSection from "../components/inspiration/PublicTripsSection";
 import PlaceDetailModal from "../components/inspiration/PlaceDetailModal";
+import ManualTripsModal from "../components/inspiration/ManualTripsModal";
 import PlaceCard from "../components/places/PlaceCard";
 import PlaceFilters from "../components/places/PlaceFilters";
 import { fetchProfile } from "../slices/authSlice";
@@ -43,11 +44,17 @@ const Inspiration = () => {
   const [priceFilter, setPriceFilter] = useState("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  
+  // Modals state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
+  const [isManualTripModalOpen, setIsManualTripModalOpen] = useState(false);
+  
+  // Selection state
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [selectedTrip, setSelectedTrip] = useState(null);
+  
   const [tripCategories, setTripCategories] = useState([]);
-
   const [comments, setComments] = useState([]);
   const [commentsMeta, setCommentsMeta] = useState({ count: 0, hasMore: false });
   const [commentsPage, setCommentsPage] = useState(1);
@@ -77,6 +84,18 @@ const Inspiration = () => {
           : prefs.open_now,
     };
   }, [user]);
+
+  // Logic to close modals on ESC
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") {
+        closeManualTripModal();
+        closePlaceModal();
+      }
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, []);
 
   useEffect(() => {
     loadPlaces({
@@ -135,65 +154,54 @@ const Inspiration = () => {
 
   const closePlaceModal = () => {
     setIsModalOpen(false);
+    setSelectedPlace(null);
+  };
+
+  const openManualTripModal = (trip) => {
+    setSelectedTrip(trip);
+    setIsManualTripModalOpen(true);
+  };
+
+  const closeManualTripModal = () => {
+    setIsManualTripModalOpen(false);
+    setSelectedTrip(null);
   };
 
   const handleTripCreated = async () => {
     await loadPublicTrips({ setLoadingTrips, setPublicTrips });
   };
 
-  // const handleToggleFavoriteInPlace = async (placeId) => {
-  //   if (!isAuthed) {
-  //     navigate("/login");
-  //     return;
-  //   }
-
-  //   const place = places.find(p => p.id === placeId);
-  //   if (!place) return;
-
-  //   try {
-  //     const data = await toggleMustVisit(placeId, !place.is_must_visit);
-  //     // Update the places list to reflect the change
-  //     setPlaces((prev) =>
-  //       prev.map((p) =>
-  //         p.id === placeId ? { ...p, is_must_visit: data.is_must_visit } : p
-  //       )
-  //     );
-  //   } catch (err) {
-  //     console.error("Failed to toggle favorite:", err);
-  //   }
-  // };
   const handleToggleFavoriteInPlace = async (placeId) => {
-  if (!isAuthed) {
-    navigate("/login");
-    return;
-  }
+    if (!isAuthed) {
+      navigate("/login");
+      return;
+    }
 
-  const place = places.find((p) => p.id === placeId);
-  if (!place) return;
+    const place = places.find((p) => p.id === placeId);
+    if (!place) return;
 
-  const newValue = !place.is_must_visit;
+    const newValue = !place.is_must_visit;
 
-  // Optimistic update — react immediately, no waiting for API
-  setPlaces((prev) =>
-    prev.map((p) => p.id === placeId ? { ...p, is_must_visit: newValue } : p)
-  );
-  if (selectedPlace?.id === placeId) {
-    setSelectedPlace((prev) => ({ ...prev, is_must_visit: newValue }));
-  }
-
-  try {
-    await toggleMustVisit(placeId, newValue);
-  } catch (err) {
-    // Revert on failure
+    // Optimistic update
     setPlaces((prev) =>
-      prev.map((p) => p.id === placeId ? { ...p, is_must_visit: !newValue } : p)
+      prev.map((p) => p.id === placeId ? { ...p, is_must_visit: newValue } : p)
     );
     if (selectedPlace?.id === placeId) {
-      setSelectedPlace((prev) => ({ ...prev, is_must_visit: !newValue }));
+      setSelectedPlace((prev) => ({ ...prev, is_must_visit: newValue }));
     }
-    console.error("Failed to toggle favorite:", err);
-  }
-};
+
+    try {
+      await toggleMustVisit(placeId, newValue);
+    } catch (err) {
+      setPlaces((prev) =>
+        prev.map((p) => p.id === placeId ? { ...p, is_must_visit: !newValue } : p)
+      );
+      if (selectedPlace?.id === placeId) {
+        setSelectedPlace((prev) => ({ ...prev, is_must_visit: !newValue }));
+      }
+      console.error("Failed to toggle favorite:", err);
+    }
+  };
 
   return (
     <div className={s.page}>
@@ -253,11 +261,15 @@ const Inspiration = () => {
         }}
       />
 
-      <PublicTripsSection styles={s} loadingTrips={loadingTrips} publicTrips={publicTrips}  setPublicTrips={setPublicTrips} />
+      <PublicTripsSection 
+        styles={s} 
+        loadingTrips={loadingTrips} 
+        publicTrips={publicTrips}  
+        setPublicTrips={setPublicTrips} 
+        onOpenTrip={openManualTripModal}
+      />
 
       <div className={s.grid}>
-        {/* Render based on sourceType filter */}
-        {/* Places (Google Places) */}
         {(sourceType === "all" || sourceType === "places") &&
           places.map((place) => (
             <PlaceCard
@@ -285,7 +297,6 @@ const Inspiration = () => {
             />
           ))}
 
-        {/* Tours (TripAdvisor) */}
         {(sourceType === "all" || sourceType === "tours") &&
           tours.map((tour, index) => (
             <PlaceCard
@@ -399,6 +410,17 @@ const Inspiration = () => {
             })
           }
         /> 
+      ) : null}
+
+      {isManualTripModalOpen && selectedTrip ? (
+        <ManualTripsModal
+          styles={s}
+          trip={selectedTrip}
+          onClose={closeManualTripModal}
+          onToggleWishlist={() => {
+            console.log("toggle wishlist", selectedTrip.id);
+          }}
+        />
       ) : null}
 
       <AddTripModal

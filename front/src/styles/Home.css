@@ -488,6 +488,7 @@ font-size: 14px;
   border: 1px solid #e5e7eb;
   background: #fff;
   transition: all 0.2s ease;
+  
 }
 
 .step-card.active {

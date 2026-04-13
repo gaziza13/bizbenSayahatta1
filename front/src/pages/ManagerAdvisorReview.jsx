@@ -5,6 +5,8 @@ import api from "../api/axios";
 import "../styles/managerReview.css";
 import { useTranslation } from "react-i18next";
 import TabBar from "../components/TabBar/TabBar";
+import TripPostsModal from "../components/managerTab/TripPostsModal";
+import s from "../styles/Inspiration.module.css";
 
 const MANAGER_TABS = [
   { id: "applications", labelKey: "manager.applications" },
@@ -16,7 +18,7 @@ export default function ManagerAdvisorReview() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { t } = useTranslation();
-  // Состояние для управления вкладками
+  
   const [activeTab, setActiveTab] = useState("applications"); 
   const [apps, setApps] = useState([]);
   const [trips, setTrips] = useState([]);
@@ -24,6 +26,10 @@ export default function ManagerAdvisorReview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [reasons, setReasons] = useState({});
+
+  // Состояния для модалки деталей поста
+  const [selectedTrip, setSelectedTrip] = useState(null);
+  const [isTripModalOpen, setIsTripModalOpen] = useState(false);
 
   const toList = (data) =>
     Array.isArray(data)
@@ -34,16 +40,9 @@ export default function ManagerAdvisorReview() {
 
   const getHistoryActionLabel = (action) => {
     if (!action) return t("manager.noReason");
-
     const translated = t(`manager.historyActions.${action}`);
-    if (translated !== `manager.historyActions.${action}`) {
-      return translated;
-    }
-
-    return action
-      .split(".")
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
+    if (translated !== `manager.historyActions.${action}`) return translated;
+    return action.split(".").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
   };
 
   useEffect(() => {
@@ -76,6 +75,16 @@ export default function ManagerAdvisorReview() {
       loadQueue();
     }
   }, [user]);
+
+  const openTripDetails = (trip) => {
+    setSelectedTrip(trip);
+    setIsTripModalOpen(true);
+  };
+
+  const closeTripDetails = () => {
+    setSelectedTrip(null);
+    setIsTripModalOpen(false);
+  };
 
   const moderate = async (id, status) => {
     try {
@@ -159,19 +168,28 @@ export default function ManagerAdvisorReview() {
             <h2 className="manager-title">{t("manager.tripPosts")}</h2>
             {!trips.length && <p>{t("manager.noPendingTrips")}</p>}
             {trips.map((trip) => (
-              <div key={trip.id} className="application-card">
+              <div 
+                key={trip.id} 
+                className="application-card" 
+                style={{ cursor: 'pointer' }}
+                onClick={() => openTripDetails(trip)}
+              >
                 <p><strong>{t("manager.title")}:</strong> {trip.title}</p>
                 <p><strong>{t("manager.destination")}:</strong> {trip.destination}</p>
-                <input
-                  className="reason-input"
-                  type="text"
-                  placeholder={t("manager.reasonOptional")}
-                  value={reasons[`trip-${trip.id}`] || ""}
-                  onChange={(e) => setReasons(prev => ({ ...prev, [`trip-${trip.id}`]: e.target.value }))}
-                />
-                <div className="actions">
-                  <button onClick={() => moderateTrip(trip.id, "APPROVED")}>{t("manager.approve")}</button>
-                  <button onClick={() => moderateTrip(trip.id, "REJECTED")}>{t("manager.reject")}</button>
+                
+                {/* Остановка всплытия события, чтобы клик по инпуту или кнопкам не открывал модалку */}
+                <div onClick={(e) => e.stopPropagation()}>
+                  <input
+                    className="reason-input"
+                    type="text"
+                    placeholder={t("manager.reasonOptional")}
+                    value={reasons[`trip-${trip.id}`] || ""}
+                    onChange={(e) => setReasons(prev => ({ ...prev, [`trip-${trip.id}`]: e.target.value }))}
+                  />
+                  <div className="actions">
+                    <button onClick={() => moderateTrip(trip.id, "APPROVED")}>{t("manager.approve")}</button>
+                    <button onClick={() => moderateTrip(trip.id, "REJECTED")}>{t("manager.reject")}</button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -196,6 +214,15 @@ export default function ManagerAdvisorReview() {
           </div>
         )}
       </div>
+
+      {/* Модалка для просмотра деталей трипа */}
+      {isTripModalOpen && selectedTrip && (
+        <TripPostsModal
+          styles={s}
+          trip={selectedTrip}
+          onClose={closeTripDetails}
+        />
+      )}
     </div>
   );
 }
