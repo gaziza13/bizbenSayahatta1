@@ -285,6 +285,19 @@ const ru = {
       location: "Местоположение:",
       status: "Статус:",
     },
+    trip: {
+      art: {
+    dates: "Даты:",
+    budget: "Бюджет:",
+    description: "Описание:",
+    noDescription: "Описание отсутствует",
+    additionalInformation: "Дополнительная информация",
+    noAdditionalInformation: "Дополнительная информация отсутствует",
+    place: "Место:",
+    destination: "Направление:",
+    durationDays: "Продолжительность:",
+  }
+}
   },
   chat: {
     searchChats: "Поиск чатов...",
@@ -341,6 +354,10 @@ const ru = {
     currentEstimate: "Текущая оценка",
     safetyTips: "Советы по безопасности",
     sources: "Источники",
+    pickAChatFromTheSidebarOrCreateANewOneToStartPlanning: "Выберите чат в боковой панели или создайте новый, чтобы начать планирование.",
+    startTheConversationAndYourTripSummaryWillBuildOnTheRight: "Начните диалог, и сводка вашей поездки будет формироваться здесь.",
+    loadingThisChatSTrip: "Загрузка данных о поездке...",
+    yourTripSummaryWillAppearHereAsWePlanIt: "Здесь появится сводка вашей поездки по мере планирования",
   },
   advisorTrips: {
     noCategoriesAvailable: "Нет доступных категорий. Попробуйте позже.",
@@ -381,6 +398,8 @@ const ru = {
     userDoesNotShare: "Пользователь не делится картой",
     userNotFound: "Пользователь не найден",
     errorLoadingMap: "Ошибка загрузки карты",
+    exporting: "Создание...",
+    downloadPdf: "Скачать PDF",
   },
   manager: {
     cannotLoadData: "Не удалось загрузить данные",
